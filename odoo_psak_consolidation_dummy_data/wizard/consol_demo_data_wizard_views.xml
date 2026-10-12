@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_demo_data_wizard_form" model="ir.ui.view">
+        <field name="name">consol.demo.data.wizard.form</field>
+        <field name="model">consol.demo.data.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate PSAK 65 Consolidation Demo Data">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        <h4><strong>PSAK 65 Consolidation Demo Data Generator</strong></h4>
+                        <p class="mb-0">
+                            This wizard will automatically configure and generate complete multi-entity demonstration data:
+                        </p>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>3 Odoo Companies:</strong> Indonesia Ho (Ultimate Parent), Company 1 (100% subsidiary), and Company 2 (80% subsidiary).</li>
+                            <li><strong>Accounts &amp; Mappings:</strong> Chart of Accounts, intercompany accounts, and consolidation mappings.</li>
+                            <li><strong>Consolidation Structure:</strong> Consolidation Group, Entities, and Ownership Structure (with NCI calculation).</li>
+                            <li><strong>Real Accounting Transactions:</strong> Balanced journal entries (account.move) in each company for Month 08 and Month 09.</li>
+                            <li><strong>End-to-End Consolidation Periods:</strong> Periods 2026-08 and 2026-09 fully calculated, reconciled, eliminated (E1, E2, E3, E7), and locked.</li>
+                            <li><strong>Comparative Financial Reports:</strong> Ready-to-view Balance Sheet and Profit &amp; Loss reports with MoM variance.</li>
+                        </ul>
+                    </div>
+                    <group>
+                        <field name="confirm"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_generate_demo_data" string="Generate / Reset Demo Data" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_demo_data_wizard" model="ir.actions.act_window">
+        <field name="name">Generate / Reset Demo Data</field>
+        <field name="res_model">consol.demo.data.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_consol_demo_data"
+              name="Generate / Reset Demo Data"
+              parent="odoo_psak_consolidation.menu_consolidation_config"
+              action="action_consol_demo_data_wizard"
+              sequence="90"
+              groups="odoo_psak_consolidation.group_consolidation_manager"/>
+</odoo>
