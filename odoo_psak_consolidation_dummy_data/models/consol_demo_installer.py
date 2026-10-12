@@ -306,6 +306,32 @@ class ConsolDemoInstaller(models.AbstractModel):
                     else:
                         exist_map.write({'consol_account_id': tgt_acc.id})
 
+        # Map every remaining account of each Odoo entity (e.g. accounts from the
+        # installed l10n chart such as 101000) so the "unmapped accounts" check in
+        # consol.period.action_load_trial_balances passes.
+        fallback_by_type = {}
+        for code, _n, acc_type, _s in ACCOUNTS_SPEC:
+            if code not in ['11210090', '21100090', '41000090', '51000090']:
+                fallback_by_type.setdefault(acc_type, code)
+        fallback_by_digit = {
+            '1': '11300180', '2': '21100010', '3': '31100020', '4': '41000010',
+        }
+        for ent in [ent_ho, ent_1, ent_2]:
+            comp = ent.company_id
+            mapped_ids = set(ConsolMapping.search([('entity_id', '=', ent.id)]).mapped('account_id').ids)
+            for acc in AccountAccount.search([('company_ids', 'in', comp.id)]):
+                if acc.id in mapped_ids:
+                    continue
+                code = fallback_by_type.get(acc.account_type) \
+                    or fallback_by_digit.get((acc.with_company(comp).code or ' ')[0], '61100010')
+                tgt_acc = ConsolAccount.search([('code', '=', code)], limit=1)
+                if tgt_acc:
+                    ConsolMapping.create({
+                        'entity_id': ent.id,
+                        'account_id': acc.id,
+                        'consol_account_id': tgt_acc.id,
+                    })
+
         _logger.info("Consolidation structure and mappings configured.")
 
         # 5. CREATE ACCOUNTING TRANSACTIONS (account.move)
