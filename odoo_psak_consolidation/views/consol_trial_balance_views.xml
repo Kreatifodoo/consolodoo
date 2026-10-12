@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_trial_balance_tree" model="ir.ui.view">
+        <field name="name">consol.trial.balance.tree</field>
+        <field name="model">consol.trial.balance</field>
+        <field name="arch" type="xml">
+            <list string="Entity Trial Balances">
+                <field name="period_id"/>
+                <field name="entity_id"/>
+                <field name="functional_currency_id"/>
+                <field name="total_debit_rc"/>
+                <field name="total_credit_rc"/>
+                <field name="total_balance_rc"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_trial_balance_form" model="ir.ui.view">
+        <field name="name">consol.trial.balance.form</field>
+        <field name="model">consol.trial.balance</field>
+        <field name="arch" type="xml">
+            <form string="Entity Trial Balance">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="period_id" readonly="1"/>
+                            <field name="entity_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="functional_currency_id"/>
+                            <field name="reporting_currency_id"/>
+                            <field name="total_balance_rc"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Account Balance Details">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="consol_account_id"/>
+                                    <field name="statement"/>
+                                    <field name="partner_id"/>
+                                    <field name="balance_fc"/>
+                                    <field name="rate_used"/>
+                                    <field name="balance_rc"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_trial_balance" model="ir.actions.act_window">
+        <field name="name">Entity Trial Balances</field>
+        <field name="res_model">consol.trial.balance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

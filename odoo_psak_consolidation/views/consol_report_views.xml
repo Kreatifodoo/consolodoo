@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_report_tree" model="ir.ui.view">
+        <field name="name">consol.report.tree</field>
+        <field name="model">consol.report</field>
+        <field name="arch" type="xml">
+            <list string="Financial Report Templates">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="report_type"/>
+                <field name="group_id"/>
+                <field name="comparison"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_report_form" model="ir.ui.view">
+        <field name="name">consol.report.form</field>
+        <field name="model">consol.report</field>
+        <field name="arch" type="xml">
+            <form string="Dynamic Financial Report Template (No-Code)">
+                <header>
+                    <button name="action_sync_accounts_to_lines" string="Auto-Assign Accounts from CoA" type="object" class="btn-primary" icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Report Template Name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Consolidated Statement of Financial Position"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Display Settings">
+                            <field name="report_type"/>
+                            <field name="group_id"/>
+                            <field name="comparison"/>
+                            <field name="rounding"/>
+                        </group>
+                        <group string="Column Options">
+                            <field name="show_entity_columns"/>
+                            <field name="show_elimination_column"/>
+                            <field name="show_nci_split"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Report Lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="level"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="line_type"/>
+                                    <field name="account_ids" widget="many2many_tags" invisible="line_type != 'accounts'"/>
+                                    <field name="formula" invisible="line_type not in ['formula', 'total']"/>
+                                    <field name="balance_sign"/>
+                                    <field name="bold"/>
+                                    <field name="underline"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Letterhead &amp; Footer">
+                            <group>
+                                <field name="header_text"/>
+                                <field name="footer_text"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_report" model="ir.actions.act_window">
+        <field name="name">Financial Report Templates</field>
+        <field name="res_model">consol.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Build consolidated financial statements without code!
+            </p>
+        </field>
+    </record>
+</odoo>

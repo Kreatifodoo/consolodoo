@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_auto_map_wizard_form" model="ir.ui.view">
+        <field name="name">consolidation.auto.map.wizard.form</field>
+        <field name="model">consolidation.auto.map.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Auto Mapping COA">
+                <group>
+                    <field name="consolidation_group_id"/>
+                </group>
+                <div class="text-muted">
+                    Sistem akan mencocokkan nama COA anak perusahaan dengan Master COA dari Induk perusahaan.
+                    Hanya COA yang belum pernah di-map yang akan ditambahkan ke pemetaan.
+                </div>
+                <footer>
+                    <button name="action_auto_map" type="object" string="Auto Map" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_auto_map_wizard" model="ir.actions.act_window">
+        <field name="name">Auto Mapping COA</field>
+        <field name="res_model">consolidation.auto.map.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

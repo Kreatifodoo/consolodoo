@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- E1: Investment vs Subsidiary Equity -->
+    <record id="elim_rule_e1" model="consol.elimination.rule">
+        <field name="name">E1: Elimination of Investment vs Subsidiary Equity &amp; Goodwill</field>
+        <field name="code">E1</field>
+        <field name="rule_type">investment_equity</field>
+        <field name="sequence">10</field>
+        <field name="description">PSAK 65 B86(b) &amp; PSAK 22: Elimination of parent investment value against subsidiary equity at acquisition date, initial goodwill and NCI recognition.</field>
+        <field name="debit_account_ids" eval="[(6, 0, [ref('consol_acc_share_capital'), ref('consol_acc_share_premium'), ref('consol_acc_goodwill')])]"/>
+        <field name="credit_account_ids" eval="[(6, 0, [ref('consol_acc_investment_sub'), ref('consol_acc_nci_equity')])]"/>
+    </record>
+
+    <!-- E2: Intercompany Balances (Receivable / Payable IC) -->
+    <record id="elim_rule_e2" model="consol.elimination.rule">
+        <field name="name">E2: Elimination of Intercompany Receivable/Payable Balances</field>
+        <field name="code">E2</field>
+        <field name="rule_type">ic_balance</field>
+        <field name="sequence">20</field>
+        <field name="description">PSAK 65 B86(c): Elimination of intercompany receivable and payable balances at end of period.</field>
+        <field name="debit_account_ids" eval="[(6, 0, [ref('consol_acc_ic_payable')])]"/>
+        <field name="credit_account_ids" eval="[(6, 0, [ref('consol_acc_ic_receivable')])]"/>
+    </record>
+
+    <!-- E3: Intercompany Transactions (Sales / COGS IC) -->
+    <record id="elim_rule_e3" model="consol.elimination.rule">
+        <field name="name">E3: Elimination of Intercompany Sales/Purchases</field>
+        <field name="code">E3</field>
+        <field name="rule_type">ic_transaction</field>
+        <field name="sequence">30</field>
+        <field name="description">PSAK 65 B86(c): Elimination of intercompany sales movements against cost of goods sold during the current period.</field>
+        <field name="debit_account_ids" eval="[(6, 0, [ref('consol_acc_ic_revenue')])]"/>
+        <field name="credit_account_ids" eval="[(6, 0, [ref('consol_acc_cogs')])]"/>
+    </record>
+
+    <!-- E6: Intercompany Dividends -->
+    <record id="elim_rule_e6" model="consol.elimination.rule">
+        <field name="name">E6: Elimination of Intercompany Dividends</field>
+        <field name="code">E6</field>
+        <field name="rule_type">ic_dividend</field>
+        <field name="sequence">40</field>
+        <field name="description">PSAK 65 B86(c): Elimination of dividend income in parent against dividend distribution in subsidiary.</field>
+    </record>
+
+    <!-- E7: Profit/Loss & OCI Attribution to NCI -->
+    <record id="elim_rule_e7" model="consol.elimination.rule">
+        <field name="name">E7: Attribution of Current Period Profit/Loss to NCI</field>
+        <field name="code">E7</field>
+        <field name="rule_type">nci_attribution</field>
+        <field name="sequence">50</field>
+        <field name="description">PSAK 65 par. B94: Allocation of subsidiary profit/loss and OCI to Non-Controlling Interest (NCI) according to effective percentage.</field>
+        <field name="debit_account_ids" eval="[(6, 0, [ref('consol_acc_nci_pl')])]"/>
+        <field name="credit_account_ids" eval="[(6, 0, [ref('consol_acc_nci_equity')])]"/>
+    </record>
+
+    <!-- E10: Foreign Currency Translation (CTA) -->
+    <record id="elim_rule_e10" model="consol.elimination.rule">
+        <field name="name">E10: Foreign Currency Translation (CTA OCI)</field>
+        <field name="code">E10</field>
+        <field name="rule_type">cta</field>
+        <field name="sequence">60</field>
+        <field name="description">PSAK 10: Translation differences between assets/liabilities at closing rate vs profit/loss at average rate recorded in OCI (CTA).</field>
+        <field name="debit_account_ids" eval="[(6, 0, [ref('consol_acc_cta')])]"/>
+        <field name="credit_account_ids" eval="[(6, 0, [ref('consol_acc_cta')])]"/>
+    </record>
+</odoo>

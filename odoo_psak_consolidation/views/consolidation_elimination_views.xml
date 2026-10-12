@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_elimination_entry_list" model="ir.ui.view">
+        <field name="name">consolidation.elimination.entry.list</field>
+        <field name="model">consolidation.elimination.entry</field>
+        <field name="arch" type="xml">
+            <list string="Elimination Entries" create="false" delete="false">
+                <field name="name"/>
+                <field name="period_id"/>
+                <field name="type"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'posted'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consolidation_elimination_entry_form" model="ir.ui.view">
+        <field name="name">consolidation.elimination.entry.form</field>
+        <field name="model">consolidation.elimination.entry</field>
+        <field name="arch" type="xml">
+            <form string="Elimination Entry" create="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="period_id"/>
+                        <field name="type"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Lines">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="account_id"/>
+                                    <field name="partner_id" optional="show"/>
+                                    <field name="name"/>
+                                    <field name="debit" sum="Total Debit"/>
+                                    <field name="credit" sum="Total Credit"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_consolidation_elimination_entry" model="ir.actions.act_window">
+        <field name="name">Elimination Entries</field>
+        <field name="res_model">consolidation.elimination.entry</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

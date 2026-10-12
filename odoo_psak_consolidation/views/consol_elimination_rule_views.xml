@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_elim_rule_tree" model="ir.ui.view">
+        <field name="name">consol.elimination.rule.tree</field>
+        <field name="model">consol.elimination.rule</field>
+        <field name="arch" type="xml">
+            <list string="Automated Elimination Rules">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="rule_type"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_elim_rule_form" model="ir.ui.view">
+        <field name="name">consol.elimination.rule.form</field>
+        <field name="model">consol.elimination.rule</field>
+        <field name="arch" type="xml">
+            <form string="Automated Elimination Rule">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="code" string="Rule Code"/>
+                        <h1><field name="code"/></h1>
+                        <label for="name" string="Rule Name"/>
+                        <h2><field name="name"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="rule_type"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="difference_account_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Target Accounts">
+                            <group>
+                                <field name="debit_account_ids" widget="many2many_tags"/>
+                                <field name="credit_account_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        <page string="PSAK Basis / Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_elimination_rule" model="ir.actions.act_window">
+        <field name="name">Elimination Rules</field>
+        <field name="res_model">consol.elimination.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

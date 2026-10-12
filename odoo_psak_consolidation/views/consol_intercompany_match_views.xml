@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_ic_match_tree" model="ir.ui.view">
+        <field name="name">consol.intercompany.match.tree</field>
+        <field name="model">consol.intercompany.match</field>
+        <field name="arch" type="xml">
+            <list string="Intercompany Reconciliation" decoration-success="status == 'matched'" decoration-warning="status == 'within_tolerance'" decoration-danger="status == 'unmatched' and not is_overridden">
+                <field name="period_id"/>
+                <field name="entity_a_id"/>
+                <field name="account_a_id"/>
+                <field name="amount_a"/>
+                <field name="entity_b_id"/>
+                <field name="account_b_id"/>
+                <field name="amount_b"/>
+                <field name="difference"/>
+                <field name="status" widget="badge" decoration-success="status == 'matched'" decoration-warning="status == 'within_tolerance'" decoration-danger="status == 'unmatched'"/>
+                <field name="is_overridden"/>
+                <button name="action_override_difference" string="Override Difference" type="object" class="btn-sm btn-secondary" invisible="status != 'unmatched' or is_overridden"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_ic_match_form" model="ir.ui.view">
+        <field name="name">consol.intercompany.match.form</field>
+        <field name="model">consol.intercompany.match</field>
+        <field name="arch" type="xml">
+            <form string="Intercompany Reconciliation">
+                <header>
+                    <button name="action_override_difference" string="Approve Difference (Override)" type="object" class="oe_highlight" invisible="status != 'unmatched' or is_overridden"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Entity A Side">
+                            <field name="entity_a_id"/>
+                            <field name="account_a_id"/>
+                            <field name="amount_a"/>
+                        </group>
+                        <group string="Entity B Side (Counterparty)">
+                            <field name="entity_b_id"/>
+                            <field name="account_b_id"/>
+                            <field name="amount_b"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Difference Analysis">
+                            <field name="difference"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Manual Approval (Override)">
+                            <field name="is_overridden"/>
+                            <field name="overridden_by" invisible="not is_overridden"/>
+                            <field name="override_reason" invisible="not is_overridden"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_ic_match" model="ir.actions.act_window">
+        <field name="name">Intercompany Matching</field>
+        <field name="res_model">consol.intercompany.match</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_group_tree" model="ir.ui.view">
+        <field name="name">consol.group.tree</field>
+        <field name="model">consol.group</field>
+        <field name="arch" type="xml">
+            <list string="Consolidation Groups">
+                <field name="name"/>
+                <field name="parent_company_id"/>
+                <field name="parent_entity_id" optional="show"/>
+                <field name="currency_id"/>
+                <field name="ic_tolerance"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_group_form" model="ir.ui.view">
+        <field name="name">consol.group.form</field>
+        <field name="model">consol.group</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Group">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Consolidation Group Name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. PT ABC Group"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Main Parameters">
+                            <field name="parent_company_id" string="Ultimate Parent Company (Odoo Company)"/>
+                            <field name="parent_entity_id" string="Parent Consolidation Entity" readonly="1" force_save="1"/>
+                            <field name="currency_id"/>
+                            <field name="fiscal_year_start"/>
+                            <field name="rounding"/>
+                            <field name="ic_tolerance"/>
+                        </group>
+                        <group string="Special Consolidation Accounts">
+                            <field name="cta_account_id"/>
+                            <field name="goodwill_account_id"/>
+                            <field name="retained_earnings_account_id"/>
+                            <field name="nci_equity_account_id"/>
+                            <field name="nci_pl_account_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Member Entities">
+                            <field name="entity_ids" widget="many2many_tags"/>
+                        </page>
+                        <page string="Multi-Tier Consolidation Sub-Groups">
+                            <field name="sub_group_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="parent_entity_id"/>
+                                    <field name="currency_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Group Accounting Policies">
+                            <field name="note" placeholder="Uniform accounting policy description and PSAK 65 consolidation guidelines..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_group" model="ir.actions.act_window">
+        <field name="name">Consolidation Groups</field>
+        <field name="res_model">consol.group</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure your financial consolidation group!
+            </p>
+        </field>
+    </record>
+</odoo>

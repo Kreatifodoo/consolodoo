@@ -1,0 +1,26 @@
+.o_consolidation_report_viewer {
+    background-color: #f8f9fa;
+    
+    .o_report_header {
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .table {
+        tr.table-active {
+            background-color: #e9ecef !important;
+            td {
+                color: #495057;
+                border-top: 2px solid #dee2e6;
+                border-bottom: 2px solid #dee2e6;
+            }
+        }
+        
+        tr.bg-light {
+            background-color: #f8f9fa !important;
+            td {
+                border-top: 1px dashed #ced4da;
+            }
+        }
+    }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_coa_map_list" model="ir.ui.view">
+        <field name="name">consolidation.coa.map.list</field>
+        <field name="model">consolidation.coa.map</field>
+        <field name="arch" type="xml">
+            <list>
+                <header>
+                    <button name="%(action_consolidation_auto_map_wizard)d" string="Auto Mapping COA" type="action" class="btn-primary" display="always"/>
+                </header>
+                <field name="parent_company_id"/>
+                <field name="group_account_code"/>
+                <field name="group_account_name"/>
+                <field name="subsidiary_company_ids" widget="many2many_tags"/>
+                <field name="subsidiary_account_ids" widget="many2many_tags"/>
+                <field name="report_type_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consolidation_coa_map_form" model="ir.ui.view">
+        <field name="name">consolidation.coa.map.form</field>
+        <field name="model">consolidation.coa.map</field>
+        <field name="arch" type="xml">
+            <form string="COA Mapping">
+                <sheet>
+                    <group>
+                        <group string="Master Account">
+                            <field name="parent_company_id"/>
+                            <field name="group_account_id"/>
+                        </group>
+                        <group string="Subsidiary Mapping">
+                            <field name="subsidiary_company_ids" widget="many2many_tags"/>
+                            <field name="subsidiary_account_ids" widget="many2many_tags"/>
+                            <field name="report_type_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_coa_map" model="ir.actions.act_window">
+        <field name="name">COA Mapping</field>
+        <field name="res_model">consolidation.coa.map</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

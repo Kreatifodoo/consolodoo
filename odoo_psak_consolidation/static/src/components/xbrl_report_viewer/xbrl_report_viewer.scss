@@ -1,0 +1,20 @@
+.o_xbrl_report_viewer {
+    .o_xbrl_table {
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tr.xbrl-header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        tr.coa-detail-line {
+            color: #495057;
+            font-size: 0.9em;
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    }
+}

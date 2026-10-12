@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_journal_line_list" model="ir.ui.view">
+        <field name="name">consolidation.journal.line.list</field>
+        <field name="model">consolidation.journal.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="period_id" optional="show"/>
+                <field name="date_start" optional="show"/>
+                <field name="date_end" optional="show"/>
+                <field name="company_id" optional="show"/>
+                <field name="account_id" optional="hide"/>
+                <field name="group_account_id"/>
+                <field name="original_balance" optional="hide"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="exchange_rate" optional="hide"/>
+                <field name="translated_balance" sum="Total"/>
+                <field name="line_type" optional="hide"/>
+                <field name="is_manual" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consolidation_journal_line_pivot" model="ir.ui.view">
+        <field name="name">consolidation.journal.line.pivot</field>
+        <field name="model">consolidation.journal.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Consolidation Summary" sample="1">
+                <field name="group_account_id" type="row"/>
+                <field name="company_id" type="col"/>
+                <field name="line_type" type="col"/>
+                <field name="translated_balance" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <record id="view_consolidation_journal_line_search" model="ir.ui.view">
+        <field name="name">consolidation.journal.line.search</field>
+        <field name="model">consolidation.journal.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="period_id"/>
+                <field name="company_id"/>
+                <field name="group_account_id"/>
+                <filter string="Group by Period" name="group_by_period" context="{'group_by':'period_id'}"/>
+                <filter string="Group by Account" name="group_by_account" context="{'group_by':'group_account_id'}"/>
+                <filter string="Group by Company" name="group_by_company" context="{'group_by':'company_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_consolidation_journal_line" model="ir.actions.act_window">
+        <field name="name">Working Paper Lines</field>
+        <field name="res_model">consolidation.journal.line</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="search_view_id" ref="view_consolidation_journal_line_search"/>
+        <field name="context">{'search_default_group_by_period': 1}</field>
+    </record>
+    
+</odoo>

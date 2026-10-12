@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_ownership_tree" model="ir.ui.view">
+        <field name="name">consol.ownership.tree</field>
+        <field name="model">consol.ownership</field>
+        <field name="arch" type="xml">
+            <list string="Ownership Structure &amp; Control">
+                <field name="parent_id"/>
+                <field name="child_id"/>
+                <field name="percentage"/>
+                <field name="voting_percentage"/>
+                <field name="effective_percentage"/>
+                <field name="nci_percentage" decoration-danger="nci_percentage &gt; 0" decoration-bf="nci_percentage &gt; 0"/>
+                <field name="method"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="goodwill_amount"/>
+                <field name="nci_at_acquisition"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_ownership_form" model="ir.ui.view">
+        <field name="name">consol.ownership.form</field>
+        <field name="model">consol.ownership</field>
+        <field name="arch" type="xml">
+            <form string="Share Ownership Structure">
+                <sheet>
+                    <group>
+                        <group string="Entity Relationship">
+                            <field name="parent_id"/>
+                            <field name="child_id"/>
+                            <field name="method"/>
+                        </group>
+                        <group string="Percentage &amp; Voting Rights">
+                            <field name="percentage"/>
+                            <field name="voting_percentage"/>
+                            <field name="effective_percentage"/>
+                            <field name="nci_percentage" readonly="1" decoration-danger="nci_percentage &gt; 0"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Control Period (PSAK 65 par. 20)">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="Acquisition Measurement (PSAK 22)">
+                            <field name="nci_measurement"/>
+                            <field name="goodwill_amount"/>
+                            <field name="nci_at_acquisition"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Control Analysis Notes">
+                            <field name="note" placeholder="Description of power indicators, variable returns, and principal vs agent analysis..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_ownership" model="ir.actions.act_window">
+        <field name="name">Ownership Structure</field>
+        <field name="res_model">consol.ownership</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define capital ownership structure and voting rights between entities!
+            </p>
+        </field>
+    </record>
+</odoo>

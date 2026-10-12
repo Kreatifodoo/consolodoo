@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="odoo_psak_consolidation.ConsolReportViewer">
+        <div class="o_consol_report_viewer">
+            <!-- Header Bar -->
+            <div class="o_report_header_bar">
+                <div class="o_report_title">
+                    <h3><t t-esc="state.data.report_name or 'Consolidation Report'"/></h3>
+                    <div class="o_report_subtitle">
+                        Group: <strong><t t-esc="state.data.group_name or '-'"/></strong> | 
+                        Period: <strong><t t-esc="state.data.period_name or '-'"/></strong>
+                    </div>
+                </div>
+                <div class="o_report_actions d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm" t-on-change="onReportChange" style="width: auto; font-weight: 500;">
+                        <t t-foreach="state.availableReports or []" t-as="rep" t-key="rep.id">
+                            <option t-att-value="rep.id" t-att-selected="rep.id === state.report_id ? 'selected' : undefined">
+                                <t t-esc="rep.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <select class="form-select form-select-sm" t-on-change="onPeriodChange" style="width: auto; font-weight: 500;">
+                        <t t-foreach="state.availablePeriods or []" t-as="per" t-key="per.id">
+                            <option t-att-value="per.id" t-att-selected="per.id === state.period_id ? 'selected' : undefined">
+                                <t t-esc="per.name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <button class="btn btn-outline-primary btn-sm" t-on-click="refreshData">
+                        <i class="fa fa-refresh me-1"/> Refresh
+                    </button>
+                    <button class="btn btn-success btn-sm" t-on-click="exportExcel">
+                        <i class="fa fa-file-excel-o me-1"/> Export Excel
+                    </button>
+                    <button class="btn btn-secondary btn-sm" t-on-click="printPdf">
+                        <i class="fa fa-print me-1"/> Print PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Matrix Container -->
+            <div class="o_report_table_container">
+                <t t-if="state.loading">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status"/>
+                        <p class="mt-2 text-muted">Loading consolidation worksheet data...</p>
+                    </div>
+                </t>
+                <t t-elif="state.data.lines">
+                    <table class="o_consol_table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Notes</th>
+                                <th>Report Line Item</th>
+                                <t t-foreach="state.data.columns" t-as="col" t-key="col.id">
+                                    <th><t t-esc="col.name"/></th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.data.lines" t-as="line" t-key="line.id">
+                                <tr t-att-class="getLineClass(line)">
+                                    <td><t t-esc="line.note"/></td>
+                                    <td t-att-style="'padding-left: ' + (line.level * 20 + 8) + 'px;'">
+                                        <t t-esc="line.name"/>
+                                    </td>
+                                    <t t-foreach="state.data.columns" t-as="col" t-key="col.id">
+                                        <td t-att-class="line.drilldown ? 'o_drilldown_cell' : ''"
+                                            t-on-click="() => this.onCellClick(line, col)">
+                                            <t t-esc="formatValue(line.values[col.id])"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+                <t t-else="">
+                    <div class="text-center p-5 text-muted">
+                        <i class="fa fa-info-circle fa-2x mb-2"/>
+                        <p>No report data found for this period.</p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

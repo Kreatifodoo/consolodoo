@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standard Consolidation Chart of Accounts (Seed Template) -->
+    <record id="consol_acc_cash" model="consol.account">
+        <field name="code">101000</field>
+        <field name="name">Cash and Cash Equivalents</field>
+        <field name="account_type">asset_cash</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_receivable" model="consol.account">
+        <field name="code">102000</field>
+        <field name="name">Third Party Trade Receivables</field>
+        <field name="account_type">asset_receivable</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_payable" model="consol.account">
+        <field name="code">201000</field>
+        <field name="name">Third Party Trade Payables</field>
+        <field name="account_type">liability_payable</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <!-- Intercompany Account Pair: IC Receivable vs IC Payable -->
+    <record id="consol_acc_ic_payable" model="consol.account">
+        <field name="code">202000</field>
+        <field name="name">Intercompany Payable</field>
+        <field name="account_type">liability_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+        <field name="is_intercompany">True</field>
+    </record>
+
+    <record id="consol_acc_ic_receivable" model="consol.account">
+        <field name="code">103000</field>
+        <field name="name">Intercompany Receivable</field>
+        <field name="account_type">asset_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+        <field name="is_intercompany">True</field>
+        <field name="ic_counterpart_id" ref="consol_acc_ic_payable"/>
+    </record>
+
+    <!-- Update counterpart on IC payable -->
+    <record id="consol_acc_ic_payable" model="consol.account">
+        <field name="ic_counterpart_id" ref="consol_acc_ic_receivable"/>
+    </record>
+
+    <record id="consol_acc_inventory" model="consol.account">
+        <field name="code">104000</field>
+        <field name="name">Inventories</field>
+        <field name="account_type">asset_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_fixed_assets" model="consol.account">
+        <field name="code">151000</field>
+        <field name="name">Property, Plant and Equipment</field>
+        <field name="account_type">asset_fixed</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_accum_depr" model="consol.account">
+        <field name="code">152000</field>
+        <field name="name">Accumulated Depreciation</field>
+        <field name="account_type">asset_non_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_goodwill" model="consol.account">
+        <field name="code">160000</field>
+        <field name="name">Consolidated Goodwill</field>
+        <field name="account_type">asset_non_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_investment_sub" model="consol.account">
+        <field name="code">170000</field>
+        <field name="name">Investment in Subsidiaries</field>
+        <field name="account_type">asset_non_current</field>
+        <field name="statement">bs</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_share_capital" model="consol.account">
+        <field name="code">301000</field>
+        <field name="name">Share Capital</field>
+        <field name="account_type">equity</field>
+        <field name="statement">equity</field>
+        <field name="translation_rate">historical</field>
+    </record>
+
+    <record id="consol_acc_share_premium" model="consol.account">
+        <field name="code">302000</field>
+        <field name="name">Share Premium</field>
+        <field name="account_type">equity</field>
+        <field name="statement">equity</field>
+        <field name="translation_rate">historical</field>
+    </record>
+
+    <record id="consol_acc_retained_earnings" model="consol.account">
+        <field name="code">303000</field>
+        <field name="name">Consolidated Retained Earnings</field>
+        <field name="account_type">equity</field>
+        <field name="statement">equity</field>
+        <field name="translation_rate">historical</field>
+    </record>
+
+    <record id="consol_acc_cta" model="consol.account">
+        <field name="code">304000</field>
+        <field name="name">Cumulative Translation Adjustment (CTA - OCI)</field>
+        <field name="account_type">equity</field>
+        <field name="statement">oci</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <record id="consol_acc_nci_equity" model="consol.account">
+        <field name="code">305000</field>
+        <field name="name">Non-Controlling Interests (NCI) in Equity</field>
+        <field name="account_type">equity</field>
+        <field name="statement">equity</field>
+        <field name="translation_rate">closing</field>
+    </record>
+
+    <!-- Profit and Loss Accounts -->
+    <record id="consol_acc_revenue" model="consol.account">
+        <field name="code">401000</field>
+        <field name="name">Sales Revenue</field>
+        <field name="account_type">income</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+    </record>
+
+    <record id="consol_acc_ic_revenue" model="consol.account">
+        <field name="code">402000</field>
+        <field name="name">Intercompany Sales Revenue</field>
+        <field name="account_type">income</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+        <field name="is_intercompany">True</field>
+    </record>
+
+    <record id="consol_acc_cogs" model="consol.account">
+        <field name="code">501000</field>
+        <field name="name">Cost of Goods Sold (COGS)</field>
+        <field name="account_type">expense_direct_cost</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+    </record>
+
+    <record id="consol_acc_opex" model="consol.account">
+        <field name="code">601000</field>
+        <field name="name">Operating &amp; General Expenses</field>
+        <field name="account_type">expense</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+    </record>
+
+    <record id="consol_acc_depr_exp" model="consol.account">
+        <field name="code">602000</field>
+        <field name="name">Depreciation Expense</field>
+        <field name="account_type">expense_depreciation</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+    </record>
+
+    <record id="consol_acc_nci_pl" model="consol.account">
+        <field name="code">701000</field>
+        <field name="name">Profit/(Loss) Attributable to Non-Controlling Interests</field>
+        <field name="account_type">expense</field>
+        <field name="statement">pl</field>
+        <field name="translation_rate">average</field>
+    </record>
+</odoo>

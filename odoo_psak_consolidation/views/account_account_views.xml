@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View -->
+    <record id="view_account_form_inherit_translate" model="ir.ui.view">
+        <field name="name">account.account.form.inherit.translate</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="name_en"/>
+                <field name="parent_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Tree View -->
+    <record id="view_account_list_inherit_translate" model="ir.ui.view">
+        <field name="name">account.account.list.inherit.translate</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="name_en" optional="show"/>
+                <field name="parent_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu -->
+    <menuitem id="menu_consolidation_root"
+              name="Consolidation"
+              web_icon="odoo_psak_consolidation,static/description/icon.png"
+              sequence="45"
+              groups="group_consolidation_auditor"/>
+
+    <!-- ========================================== -->
+    <!-- 1. OPERATIONS SUBMENU                      -->
+    <!-- ========================================== -->
+    <menuitem id="menu_consolidation_process"
+              name="Operations"
+              parent="menu_consolidation_root"
+              sequence="10"/>
+
+    <menuitem id="menu_consol_period"
+              name="Consolidation Periods"
+              parent="menu_consolidation_process"
+              action="action_consol_period"
+              sequence="10"/>
+
+    <menuitem id="menu_consol_trial_balance"
+              name="Entity Trial Balances"
+              parent="menu_consolidation_process"
+              action="action_consol_trial_balance"
+              sequence="20"/>
+
+    <menuitem id="menu_consol_ic_match"
+              name="Intercompany Matching"
+              parent="menu_consolidation_process"
+              action="action_consol_ic_match"
+              sequence="30"/>
+
+    <menuitem id="menu_consol_journal"
+              name="Elimination Journals"
+              parent="menu_consolidation_process"
+              action="action_consol_journal"
+              sequence="40"/>
+
+    <!-- ========================================== -->
+    <!-- 2. REPORTING SUBMENU                       -->
+    <!-- ========================================== -->
+    <menuitem id="menu_consolidation_reports"
+              name="Reporting"
+              parent="menu_consolidation_root"
+              sequence="20"/>
+
+    <menuitem id="menu_consol_report_export"
+              name="Consolidated Financial Reports"
+              parent="menu_consolidation_reports"
+              action="action_consol_report_export_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_consol_nci_analysis"
+              name="Ownership &amp; NCI Analysis"
+              parent="menu_consolidation_reports"
+              action="action_consol_ownership"
+              sequence="20"/>
+
+    <!-- ========================================== -->
+    <!-- 3. CONFIGURATION SUBMENU                   -->
+    <!-- ========================================== -->
+    <menuitem id="menu_consolidation_config"
+              name="Configuration"
+              parent="menu_consolidation_root"
+              sequence="30"
+              groups="group_consolidation_manager"/>
+
+    <menuitem id="menu_consol_group"
+              name="Consolidation Groups"
+              parent="menu_consolidation_config"
+              action="action_consol_group"
+              sequence="10"/>
+
+    <menuitem id="menu_consol_entity"
+              name="Consolidation Entities"
+              parent="menu_consolidation_config"
+              action="action_consol_entity"
+              sequence="20"/>
+
+    <menuitem id="menu_consol_ownership"
+              name="Ownership Structure"
+              parent="menu_consolidation_config"
+              action="action_consol_ownership"
+              sequence="25"/>
+
+    <menuitem id="menu_consol_account"
+              name="Chart of Accounts (COA)"
+              parent="menu_consolidation_config"
+              action="action_consol_account"
+              sequence="30"/>
+
+    <menuitem id="menu_consol_import_company_coa_wizard"
+              name="Import Master CoA from Company"
+              parent="menu_consolidation_config"
+              action="action_consol_import_company_coa_wizard"
+              sequence="35"/>
+
+    <menuitem id="menu_consol_account_mapping"
+              name="Entity Account Mappings"
+              parent="menu_consolidation_config"
+              action="action_consol_account_mapping"
+              sequence="40"/>
+
+    <menuitem id="menu_consol_auto_map_wizard"
+              name="Auto-Map Entity Accounts"
+              parent="menu_consolidation_config"
+              action="action_consol_auto_map_wizard"
+              sequence="45"/>
+
+    <menuitem id="menu_consol_rate"
+              name="Consolidation Exchange Rates"
+              parent="menu_consolidation_config"
+              action="action_consol_rate"
+              sequence="50"/>
+
+    <menuitem id="menu_consol_elim_rule"
+              name="Elimination Rules"
+              parent="menu_consolidation_config"
+              action="action_consol_elimination_rule"
+              sequence="60"/>
+
+    <menuitem id="menu_consol_report_template"
+              name="Report Templates"
+              parent="menu_consolidation_config"
+              action="action_consol_report"
+              sequence="70"/>
+</odoo>

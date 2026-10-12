@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_import_company_coa_wizard_form" model="ir.ui.view">
+        <field name="name">consol.import.company.coa.wizard.form</field>
+        <field name="model">consol.import.company.coa.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Master CoA from Company">
+                <sheet>
+                    <p class="text-muted">
+                        This wizard will import the entire Chart of Accounts from the selected Odoo company into the 
+                        <strong>Consolidation Chart of Accounts</strong> and automatically map accounts across all entities.
+                    </p>
+                    <group>
+                        <field name="company_id" options="{'no_create': True}"/>
+                        <field name="auto_map_entities"/>
+                        <field name="update_existing"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Import &amp; Auto-Map"
+                            name="action_import_and_map"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_import_company_coa_wizard" model="ir.actions.act_window">
+        <field name="name">Import Master CoA from Company</field>
+        <field name="res_model">consol.import.company.coa.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

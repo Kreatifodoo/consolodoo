@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_coa_master_tree" model="ir.ui.view">
+        <field name="name">consolidation.coa.master.tree</field>
+        <field name="model">consolidation.coa.master</field>
+        <field name="arch" type="xml">
+            <list string="Consolidation Master COA">
+                <header>
+                    <button name="%(action_consolidation_copy_coa_wizard)d" string="Copy from Odoo COA" type="action" class="btn-primary" display="always"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="parent_id" optional="show"/>
+                <field name="is_group" optional="show"/>
+                <field name="name_en"/>
+                <field name="report_section"/>
+                <field name="normal_balance"/>
+                <field name="company_id"/>
+                <field name="is_intercompany_elimination"/>
+                <field name="currency_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consolidation_coa_master_form" model="ir.ui.view">
+        <field name="name">consolidation.coa.master.form</field>
+        <field name="model">consolidation.coa.master</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Master COA">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="e.g. Cash and Bank Equivalents"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="account_type"/>
+                            <field name="parent_id"/>
+                            <field name="is_group"/>
+                            <field name="name_en"/>
+                            <field name="report_section"/>
+                            <field name="normal_balance"/>
+                            <field name="sequence"/>
+                            <field name="is_intercompany_elimination"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_coa_master" model="ir.actions.act_window">
+        <field name="name">Master COA Consolidation</field>
+        <field name="res_model">consolidation.coa.master</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Master COA for Consolidation
+            </p>
+            <p>
+                Define a chart of accounts specifically for the consolidated reporting.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_copy_coa_wizard_form" model="ir.ui.view">
+        <field name="name">consolidation.copy.coa.wizard.form</field>
+        <field name="model">consolidation.copy.coa.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Copy COA from Company">
+                <group>
+                    <field name="source_company_id"/>
+                </group>
+                <div class="text-muted">
+                    Sistem akan mengambil seluruh COA bawaan Odoo dari perusahaan sumber yang dipilih 
+                    dan menyalinnya sebagai Master COA. COA yang kodenya sudah ada akan dilewati.
+                </div>
+                <footer>
+                    <button name="action_copy" type="object" string="Copy COA" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_copy_coa_wizard" model="ir.actions.act_window">
+        <field name="name">Copy COA from Company</field>
+        <field name="res_model">consolidation.copy.coa.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

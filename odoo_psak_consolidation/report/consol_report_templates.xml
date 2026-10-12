@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_consolidation_qweb" model="ir.actions.report">
+        <field name="name">Consolidated Financial Statements</field>
+        <field name="model">consol.period</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">odoo_psak_consolidation.report_consolidation_document</field>
+        <field name="report_file">odoo_psak_consolidation.report_consolidation_document</field>
+        <field name="print_report_name">'Consolidated_Report_' + (object.name or '')</field>
+        <field name="binding_model_id" ref="model_consol_period"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_consolidation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="period">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 11px;">
+                        <div class="text-center mb-4">
+                            <h3 style="margin-bottom: 2px;"><span t-esc="period.group_id.name"/></h3>
+                            <h4 style="margin-bottom: 2px;">CONSOLIDATED FINANCIAL STATEMENTS (PSAK 65 / IFRS 10)</h4>
+                            <p class="text-muted">For the Period Ended <span t-field="period.date_to"/></p>
+                        </div>
+
+                        <t t-set="reports" t-value="request.env['consol.report'].search([])"/>
+                        <t t-foreach="reports" t-as="rep">
+                            <t t-set="matrix" t-value="rep.get_report_matrix(period.id)"/>
+                            <h5 class="mt-4 pb-1 border-bottom" style="color: #1f4e79;"><span t-esc="matrix['report_name']"/></h5>
+                            <table class="table table-sm table-bordered mt-2">
+                                <thead class="thead-light">
+                                    <tr style="background-color: #f2f4f8;">
+                                        <th style="width: 10%;">Notes</th>
+                                        <th style="width: 35%;">Report Line Item</th>
+                                        <t t-foreach="matrix['columns']" t-as="col">
+                                            <th class="text-right" style="width: 15%;"><span t-esc="col['name']"/></th>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="matrix['lines']" t-as="line">
+                                        <tr t-att-style="'font-weight: bold;' if line['bold'] else ''">
+                                            <td><span t-esc="line['note']"/></td>
+                                            <td t-att-style="'padding-left: ' + str((line['level'] or 0) * 15) + 'px;'">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <t t-foreach="matrix['columns']" t-as="col">
+                                                <td class="text-right">
+                                                    <t t-set="val" t-value="line['values'].get(col['id'], '')"/>
+                                                    <t t-if="val != '' and isinstance(val, (int, float))">
+                                                        <span t-esc="'{:,.2f}'.format(val)"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span t-esc="val"/>
+                                                    </t>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <div style="page-break-after: always;"/>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

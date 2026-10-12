@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_account_tree" model="ir.ui.view">
+        <field name="name">consol.account.tree</field>
+        <field name="model">consol.account</field>
+        <field name="arch" type="xml">
+            <list string="Chart of Accounts">
+                <header>
+                    <button name="action_open_import_company_coa_wizard"
+                            type="object"
+                            string="Import from Company CoA"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="account_type"/>
+                <field name="statement"/>
+                <field name="translation_rate"/>
+                <field name="is_intercompany"/>
+                <field name="ic_counterpart_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_consol_account_form" model="ir.ui.view">
+        <field name="name">consol.account.form</field>
+        <field name="model">consol.account</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Account">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="code" string="Account Code"/>
+                        <h1>
+                            <field name="code" placeholder="e.g. 101000"/>
+                        </h1>
+                        <label for="name" string="Account Name"/>
+                        <h2>
+                            <field name="name" placeholder="e.g. Cash and Cash Equivalents"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Account Classification">
+                            <field name="account_type"/>
+                            <field name="statement"/>
+                            <field name="translation_rate"/>
+                            <field name="parent_id"/>
+                        </group>
+                        <group string="Intercompany Configuration (IC)">
+                            <field name="is_intercompany"/>
+                            <field name="ic_counterpart_id" invisible="not is_intercompany"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Sub-Accounts" invisible="not child_ids">
+                            <field name="child_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="account_type"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_consol_account_search" model="ir.ui.view">
+        <field name="name">consol.account.search</field>
+        <field name="model">consol.account</field>
+        <field name="arch" type="xml">
+            <search string="Search Consolidation Accounts">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Balance Sheet (BS)" name="filter_bs" domain="[('statement', '=', 'bs')]"/>
+                <filter string="Profit &amp; Loss (PL)" name="filter_pl" domain="[('statement', '=', 'pl')]"/>
+                <filter string="Intercompany Accounts" name="filter_ic" domain="[('is_intercompany', '=', True)]"/>
+                <group>
+                    <filter string="Statement Classification" name="group_statement" domain="" context="{'group_by': 'statement'}"/>
+                    <filter string="Account Type" name="group_account_type" domain="" context="{'group_by': 'account_type'}"/>
+                    <filter string="Translation Rate" name="group_translation" domain="" context="{'group_by': 'translation_rate'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_consol_account" model="ir.actions.act_window">
+        <field name="name">Chart of Accounts (COA)</field>
+        <field name="res_model">consol.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_consol_account_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your first consolidation account!
+            </p>
+        </field>
+    </record>
+</odoo>

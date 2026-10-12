@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_period_form" model="ir.ui.view">
+        <field name="name">consolidation.period.form</field>
+        <field name="model">consolidation.period</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_run_aggregation" string="Generate Worksheet" type="object" class="oe_highlight" invisible="state not in ['draft', 'generated']"/>
+                    <button name="action_run_elimination" string="Run Auto Elimination" type="object" class="oe_highlight" invisible="state != 'generated'"/>
+                    <button name="action_validate_consolidation" string="Post Worksheet" type="object" class="oe_highlight" invisible="state != 'generated'"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_consol_journal" icon="fa-list-alt">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">TB Journals</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" type="object" name="action_view_elim_journal" icon="fa-list-alt">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Elim Journals</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="group_id"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <notebook>
+                        <page string="Working Paper">
+                            <field name="worksheet_line_ids">
+                                <list editable="bottom" create="false" delete="false" default_order="report_section, sequence">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="account_id" readonly="1"/>
+                                    <field name="report_section" readonly="1" optional="show"/>
+                                    <field name="parent_balance" readonly="1"/>
+                                    <field name="subsidiary_balance" readonly="1"/>
+                                    <field name="elimination_debit" readonly="1"/>
+                                    <field name="elimination_credit" readonly="1"/>
+                                    <field name="consolidated_balance" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Exchange Rates">
+                            <field name="rate_ids">
+                                <list editable="bottom">
+                                    <field name="currency_id"/>
+                                    <field name="closing_rate"/>
+                                    <field name="average_rate"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_period" model="ir.actions.act_window">
+        <field name="name">Periods</field>
+        <field name="res_model">consolidation.period</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

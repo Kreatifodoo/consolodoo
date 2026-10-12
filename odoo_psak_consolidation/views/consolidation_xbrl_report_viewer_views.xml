@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_consolidation_xbrl_report_viewer" model="ir.actions.client">
+        <field name="name">XBRL Consolidation Report</field>
+        <field name="tag">consolidation_xbrl_dynamic_report</field>
+    </record>
+
+    <!-- Menu under Consolidation > Reporting -->
+    <menuitem id="menu_consolidation_xbrl_report_viewer" 
+              name="XBRL Consolidation Report" 
+              parent="menu_consolidation_reporting" 
+              action="action_consolidation_xbrl_report_viewer" 
+              sequence="15"/>
+</odoo>

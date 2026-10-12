@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_consolidation_root" name="Consolidation" sequence="100" web_icon="account,static/description/icon.png"/>
+    <menuitem id="menu_consolidation_config" name="Configuration" parent="menu_consolidation_root" sequence="10"/>
+    
+    <menuitem id="menu_consolidation_group" name="Consolidation Groups" parent="menu_consolidation_config" action="action_consolidation_group" sequence="10"/>
+    <menuitem id="menu_consolidation_coa_master" name="Master COA Consolidation" parent="menu_consolidation_config" action="action_consolidation_coa_master" sequence="20"/>
+    <menuitem id="menu_consolidation_coa_map" name="COA Mapping" parent="menu_consolidation_config" action="action_consolidation_coa_map" sequence="30"/>
+    <menuitem id="menu_consolidation_report_config" name="Financial Reports Config" parent="menu_consolidation_config" action="action_consolidation_report" sequence="40"/>
+    <menuitem id="menu_consolidation_rule" name="Rules" parent="menu_consolidation_config" action="action_consolidation_rule" sequence="50"/>
+    
+    <menuitem id="menu_consolidation_reporting" name="Reporting" parent="menu_consolidation_root" sequence="40"/>
+    <menuitem id="menu_consolidation_financial_reports" name="Financial Reports" parent="menu_consolidation_reporting" action="action_consolidation_report_viewer" sequence="10"/>
+    <menuitem id="menu_consolidation_wp" name="Working Paper (Excel)" parent="menu_consolidation_reporting" action="action_consolidation_journal_line" sequence="20"/>
+    <menuitem id="menu_consolidation_wp_html" name="Working Paper Summary" parent="menu_consolidation_reporting" action="action_consolidation_wp_summary_wizard" sequence="25"/>
+    <menuitem id="menu_consolidation_wp_export" name="Export Working Paper" parent="menu_consolidation_reporting" action="action_consolidation_wp_export" sequence="30"/>
+    <menuitem id="menu_consolidation_nci" name="NCI Tracking" parent="menu_consolidation_reporting" action="action_consolidation_nci" sequence="35"/>
+    <menuitem id="menu_consolidation_elim_entry" name="Elimination Entries" parent="menu_consolidation_reporting" action="action_consolidation_elimination_entry" sequence="40"/>
+    
+    <menuitem id="menu_consolidation_period" name="Periods" parent="menu_consolidation_root" action="action_consolidation_period" sequence="20"/>
+</odoo>
+

@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- 1. CONSOLIDATED STATEMENT OF FINANCIAL POSITION TEMPLATE -->
+    <record id="report_balance_sheet" model="consol.report">
+        <field name="name">Consolidated Statement of Financial Position</field>
+        <field name="report_type">balance_sheet</field>
+        <field name="sequence">10</field>
+        <field name="show_entity_columns">True</field>
+        <field name="show_elimination_column">True</field>
+    </record>
+
+    <!-- Balance Sheet Report Lines -->
+    <record id="rline_bs_h_asset" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">10</field>
+        <field name="name">ASSETS</field>
+        <field name="level">0</field>
+        <field name="line_type">header</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_h_current_asset" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">20</field>
+        <field name="name">Current Assets</field>
+        <field name="level">1</field>
+        <field name="line_type">header</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_cash" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">30</field>
+        <field name="name">Cash and Cash Equivalents</field>
+        <field name="code">CASH</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_cash')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">4</field>
+    </record>
+
+    <record id="rline_bs_ar" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">40</field>
+        <field name="name">Trade Receivables</field>
+        <field name="code">AR</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_receivable')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">5</field>
+    </record>
+
+    <record id="rline_bs_ar_ic" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">50</field>
+        <field name="name">Intercompany Receivables</field>
+        <field name="code">AR_IC</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_ic_receivable')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">6</field>
+    </record>
+
+    <record id="rline_bs_inv" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">60</field>
+        <field name="name">Inventories</field>
+        <field name="code">INV</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_inventory')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">7</field>
+    </record>
+
+    <record id="rline_bs_tot_current_asset" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">70</field>
+        <field name="name">Total Current Assets</field>
+        <field name="code">TOT_CA</field>
+        <field name="level">1</field>
+        <field name="line_type">formula</field>
+        <field name="formula">CASH + AR + AR_IC + INV</field>
+        <field name="bold">True</field>
+        <field name="underline">True</field>
+    </record>
+
+    <record id="rline_bs_h_non_current_asset" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">80</field>
+        <field name="name">Non-Current Assets</field>
+        <field name="level">1</field>
+        <field name="line_type">header</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_fixed" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">90</field>
+        <field name="name">Property, Plant and Equipment (Net)</field>
+        <field name="code">FA</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_fixed_assets'), ref('consol_acc_accum_depr')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">8</field>
+    </record>
+
+    <record id="rline_bs_goodwill" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">100</field>
+        <field name="name">Goodwill</field>
+        <field name="code">GW</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_goodwill')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">9</field>
+    </record>
+
+    <record id="rline_bs_inv_sub" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">110</field>
+        <field name="name">Investment in Subsidiaries</field>
+        <field name="code">INV_SUB</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_investment_sub')])]"/>
+        <field name="balance_sign">natural</field>
+    </record>
+
+    <record id="rline_bs_tot_assets" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">120</field>
+        <field name="name">TOTAL ASSETS</field>
+        <field name="code">TOT_ASSETS</field>
+        <field name="level">0</field>
+        <field name="line_type">formula</field>
+        <field name="formula">TOT_CA + FA + GW + INV_SUB</field>
+        <field name="bold">True</field>
+        <field name="underline">True</field>
+    </record>
+
+    <record id="rline_bs_h_liab_eq" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">130</field>
+        <field name="name">LIABILITIES AND EQUITY</field>
+        <field name="level">0</field>
+        <field name="line_type">header</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_ap" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">140</field>
+        <field name="name">Trade Payables</field>
+        <field name="code">AP</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_payable')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">10</field>
+    </record>
+
+    <record id="rline_bs_ap_ic" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">150</field>
+        <field name="name">Intercompany Payables</field>
+        <field name="code">AP_IC</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_ic_payable')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">11</field>
+    </record>
+
+    <record id="rline_bs_tot_liab" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">160</field>
+        <field name="name">Total Liabilities</field>
+        <field name="code">TOT_LIAB</field>
+        <field name="level">1</field>
+        <field name="line_type">formula</field>
+        <field name="formula">AP + AP_IC</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_h_equity" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">170</field>
+        <field name="name">Equity Attributable to Owners of Parent</field>
+        <field name="level">1</field>
+        <field name="line_type">header</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_bs_equity_parent" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">180</field>
+        <field name="name">Share Capital &amp; Retained Earnings</field>
+        <field name="code">EQ_PARENT</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_share_capital'), ref('consol_acc_share_premium'), ref('consol_acc_retained_earnings'), ref('consol_acc_cta')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">12</field>
+    </record>
+
+    <record id="rline_bs_nci_equity" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">190</field>
+        <field name="name">Non-Controlling Interests (NCI)</field>
+        <field name="code">NCI_EQ</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_nci_equity')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">13</field>
+    </record>
+
+    <record id="rline_bs_curr_ni" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">200</field>
+        <field name="name">Profit/(Loss) for the Period</field>
+        <field name="code">CURR_NI</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_revenue'), ref('consol_acc_ic_revenue'), ref('consol_acc_cogs'), ref('consol_acc_opex'), ref('consol_acc_depr_exp')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">14</field>
+    </record>
+
+    <record id="rline_bs_tot_liab_equity" model="consol.report.line">
+        <field name="report_id" ref="report_balance_sheet"/>
+        <field name="sequence">210</field>
+        <field name="name">TOTAL LIABILITIES AND EQUITY</field>
+        <field name="code">TOT_LIAB_EQ</field>
+        <field name="level">0</field>
+        <field name="line_type">formula</field>
+        <field name="formula">TOT_LIAB + EQ_PARENT + CURR_NI + NCI_EQ</field>
+        <field name="bold">True</field>
+        <field name="underline">True</field>
+    </record>
+
+    <!-- 2. CONSOLIDATED STATEMENT OF PROFIT OR LOSS AND OCI TEMPLATE -->
+    <record id="report_profit_loss" model="consol.report">
+        <field name="name">Consolidated Statement of Profit or Loss and OCI</field>
+        <field name="report_type">profit_loss</field>
+        <field name="sequence">20</field>
+        <field name="show_entity_columns">True</field>
+        <field name="show_elimination_column">True</field>
+        <field name="show_nci_split">True</field>
+    </record>
+
+    <record id="rline_pl_revenue" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">10</field>
+        <field name="name">Revenue from Sales</field>
+        <field name="code">REV</field>
+        <field name="level">1</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_revenue'), ref('consol_acc_ic_revenue')])]"/>
+        <field name="balance_sign">reverse</field>
+        <field name="note">15</field>
+    </record>
+
+    <record id="rline_pl_cogs" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">20</field>
+        <field name="name">Cost of Goods Sold (COGS)</field>
+        <field name="code">COGS</field>
+        <field name="level">1</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_cogs')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">16</field>
+    </record>
+
+    <record id="rline_pl_gp" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">30</field>
+        <field name="name">GROSS PROFIT</field>
+        <field name="code">GP</field>
+        <field name="level">0</field>
+        <field name="line_type">formula</field>
+        <field name="formula">REV - COGS</field>
+        <field name="bold">True</field>
+    </record>
+
+    <record id="rline_pl_opex" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">40</field>
+        <field name="name">Operating &amp; General Expenses</field>
+        <field name="code">OPEX</field>
+        <field name="level">1</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_opex'), ref('consol_acc_depr_exp')])]"/>
+        <field name="balance_sign">natural</field>
+        <field name="note">17</field>
+    </record>
+
+    <record id="rline_pl_ni" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">50</field>
+        <field name="name">NET PROFIT FOR THE PERIOD</field>
+        <field name="code">NI</field>
+        <field name="level">0</field>
+        <field name="line_type">formula</field>
+        <field name="formula">GP - OPEX</field>
+        <field name="bold">True</field>
+        <field name="underline">True</field>
+    </record>
+
+    <record id="rline_pl_nci_share" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">60</field>
+        <field name="name">Attributable to: Non-Controlling Interests (NCI)</field>
+        <field name="code">NCI_ATTRIB</field>
+        <field name="level">2</field>
+        <field name="line_type">accounts</field>
+        <field name="account_ids" eval="[(6, 0, [ref('consol_acc_nci_pl')])]"/>
+        <field name="balance_sign">natural</field>
+    </record>
+
+    <record id="rline_pl_parent_share" model="consol.report.line">
+        <field name="report_id" ref="report_profit_loss"/>
+        <field name="sequence">70</field>
+        <field name="name">Attributable to: Owners of the Parent</field>
+        <field name="code">PARENT_SHARE</field>
+        <field name="level">2</field>
+        <field name="line_type">formula</field>
+        <field name="formula">NI - NCI_ATTRIB</field>
+        <field name="bold">True</field>
+    </record>
+</odoo>

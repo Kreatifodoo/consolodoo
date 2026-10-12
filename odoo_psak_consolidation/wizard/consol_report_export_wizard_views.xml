@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consol_report_export_wizard_form" model="ir.ui.view">
+        <field name="name">consol.report.export.wizard.form</field>
+        <field name="model">consol.report.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Print &amp; Export Consolidated Financial Reports">
+                <group>
+                    <field name="period_id"/>
+                    <field name="report_id"/>
+                    <field name="export_format" widget="radio"/>
+                </group>
+                <footer>
+                    <button name="action_generate_export" string="Generate Report" type="object" class="oe_highlight"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consol_report_export_wizard" model="ir.actions.act_window">
+        <field name="name">Consolidated Financial Reports</field>
+        <field name="res_model">consol.report.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

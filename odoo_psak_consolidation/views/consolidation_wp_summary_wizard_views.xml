@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_consolidation_wp_summary_wizard_form" model="ir.ui.view">
+        <field name="name">consolidation.wp.summary.wizard.form</field>
+        <field name="model">consolidation.wp.summary.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Working Paper Summary">
+                <sheet>
+                    <group>
+                        <field name="period_id"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_view_html" type="object" string="View HTML Report" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consolidation_wp_summary_wizard" model="ir.actions.act_window">
+        <field name="name">HTML Working Paper Summary</field>
+        <field name="res_model">consolidation.wp.summary.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_consolidation_wp_viewer" model="ir.actions.client">
+        <field name="name">Working Paper Viewer</field>
+        <field name="tag">odoo_psak_consolidation.wp_viewer</field>
+    </record>
+</odoo>
