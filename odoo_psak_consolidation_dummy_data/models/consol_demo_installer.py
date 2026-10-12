@@ -199,7 +199,6 @@ class ConsolDemoInstaller(models.AbstractModel):
         if not group:
             group = ConsolGroup.create({
                 'name': 'Indonesia HO',
-                'code': 'GRP_IDN',
                 'parent_company_id': c_ho.id,
                 'currency_id': currency_idr.id,
                 'goodwill_account_id': acc_gw.id,
