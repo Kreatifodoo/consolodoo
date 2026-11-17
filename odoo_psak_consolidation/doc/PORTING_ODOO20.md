@@ -31,6 +31,19 @@ Tanggal: 17 Nov 2026. Basis: zip `odoo_psak_consolidation` (manifest 19.0.1.0.0)
 3. **Grup Konsolidasi**: `res.company` di Odoo 20 tidak punya field `code`. Membuat grup untuk company yang belum punya entitas sebelumnya error.
 4. Sinkronisasi akun ke template standar (baris CURR_NI & OPEX) ikut memasukkan `expense_other`.
 
+## Perbaikan 20.0.1.0.2 (engine konsolidasi untuk periode bulanan Odoo)
+
+Odoo tidak menutup akun laba rugi ke saldo laba. Laba tahun berjalan dihitung dinamis. Akibatnya engine lama menghasilkan neraca saldo bulanan yang tidak seimbang mulai bulan kedua, dan neraca per bulan kehilangan laba bulan-bulan sebelumnya.
+
+1. **Tarik Neraca Saldo**: laba rugi sebelum `date_from` ikut ditarik sebagai saldo ekuitas. Tahun buku berjalan masuk ke akun *Laba Tahun Berjalan* entitas (`equity_unaffected`), dan tahun buku sebelumnya ke *Akun Saldo Laba Konsolidasi* grup. Hasilnya, setiap periode seimbang.
+2. **Laporan posisi** (Neraca, Perubahan Ekuitas, Kertas Kerja) memakai laba rugi periode terakhir saja, karena laba sebelumnya sudah ada di ekuitas. Laporan Laba Rugi dan Arus Kas tetap menjumlahkan periode terpilih.
+3. **Drill-down** akun neraca pada mode *Semua Periode* tidak lagi menjumlahkan saldo semua bulan.
+4. **E1**:
+   - Hanya akun modal (nama mengandung *capital/modal*) yang dieliminasi, dengan tanda debit/kredit sesuai saldo.
+   - Tidak lagi jatuh ke seluruh akun ekuitas bila entitas anak belum punya modal.
+   - Jurnal kosong tidak dibuat.
+5. **Generate Eliminations** bisa dijalankan ulang: seluruh jurnal otomatis lama, termasuk yang sudah terposting kecuali E10, dihapus lebih dulu, sehingga eliminasi tidak dobel. Periode terkunci ditolak.
+
 ## Belum diubah
 
 - File lama yang tidak dimuat manifest (`models/consolidation_*.py`, `views/consolidation_*.xml`, `controllers/wp_main.py`, `controllers/xbrl_export_controller.py`) dibiarkan apa adanya (tidak di-import).

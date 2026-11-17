@@ -363,9 +363,14 @@ class ConsolReport(models.Model):
                 entity_acc_balances.get((l.entity_id.id, l.consol_account_id.id), 0.0) + l.balance_rc
             )
 
-        # Pos Laba Rugi & OCI: akumulasi kinerja dari seluruh periode terpilih (movement across periods)
+        # Pos Laba Rugi & OCI: akumulasi kinerja dari seluruh periode terpilih (movement across periods).
+        # Laporan posisi (Neraca, Perubahan Ekuitas, Kertas Kerja) memakai periode terakhir saja: neraca
+        # saldonya sudah memuat laba rugi tahun berjalan sebelum periode tsb (akun Laba Tahun Berjalan),
+        # sehingga menjumlahkan laba rugi seluruh periode akan menghitung laba dua kali.
+        position_report = self.report_type in ('balance_sheet', 'equity_changes', 'worksheet')
+        pl_periods = latest_period if position_report else periods
         tb_lines_pl = self.env['consol.trial.balance.line'].search([
-            ('period_id', 'in', periods.ids),
+            ('period_id', 'in', pl_periods.ids),
             ('statement', 'in', ['pl', 'oci'])
         ])
         for l in tb_lines_pl:
@@ -388,7 +393,7 @@ class ConsolReport(models.Model):
 
         # Jurnal Eliminasi Laba Rugi (E3, E6, E7 pada seluruh periode terpilih)
         j_lines_pl = self.env['consol.journal.line'].search([
-            ('period_id', 'in', periods.ids),
+            ('period_id', 'in', pl_periods.ids),
             ('journal_id.state', '=', 'posted'),
             ('consol_account_id.statement', 'in', ['pl', 'oci'])
         ])
@@ -465,9 +470,9 @@ class ConsolReport(models.Model):
 
         # 6. Hitung Baris Laporan & Rincian Akun (Unfold Data)
         tb_source_map = {}
-        tb_records = self.env['consol.trial.balance.line'].search([
-            ('period_id', 'in', periods.ids)
-        ])
+        # Rincian sumber mengikuti angka baris: posisi neraca dari periode terakhir, laba rugi dari
+        # periode laba rugi (sebelumnya saldo neraca seluruh periode ikut terjumlah pada mode "Semua Periode").
+        tb_records = tb_lines_bs | tb_lines_pl
         for tb_rec in tb_records:
             acc_id = tb_rec.consol_account_id.id
             if acc_id not in tb_source_map:

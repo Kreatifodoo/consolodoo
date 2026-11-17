@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -86,6 +88,63 @@ class ConsolPeriod(models.Model):
         if self.group_id.parent_entity_id:
             entities |= self.group_id.parent_entity_id
         return entities
+
+    def _get_fiscal_year_start(self):
+        """Tanggal awal tahun buku grup yang memuat date_from periode ini."""
+        self.ensure_one()
+        month = int(self.group_id.fiscal_year_start or 1)
+        year = self.date_from.year if self.date_from.month >= month else self.date_from.year - 1
+        return fields.Date.to_date(f"{year}-{month:02d}-01")
+
+    def _get_earnings_carry_in_lines(self, entity, tb, mapping_by_acc_id, rates):
+        """Odoo tidak menutup akun laba rugi ke saldo laba (laba tahun berjalan dihitung dinamis).
+        Agar neraca saldo periode bulanan tetap seimbang, laba rugi sebelum ``date_from`` ditarik
+        sebagai saldo ekuitas:
+        - tahun buku berjalan s/d date_from - 1 -> akun Laba Tahun Berjalan entitas (equity_unaffected)
+        - tahun buku sebelumnya -> akun Saldo Laba konsolidasi grup
+        """
+        self.ensure_one()
+        fy_start = self._get_fiscal_year_start()
+        self.env.cr.execute("""
+            SELECT COALESCE(SUM(CASE WHEN aml.date >= %s THEN aml.balance ELSE 0 END), 0) AS current_year,
+                   COALESCE(SUM(CASE WHEN aml.date < %s THEN aml.balance ELSE 0 END), 0) AS prior_years
+            FROM account_move_line aml
+            JOIN account_move am ON am.id = aml.move_id
+            JOIN account_account aa ON aa.id = aml.account_id
+            JOIN account_journal aj ON aj.id = aml.journal_id
+            WHERE am.state = 'posted'
+              AND (aj.journal_group_id IS NULL OR aj.journal_group_id = %s)
+              AND aml.company_id = %s
+              AND aml.date < %s
+              AND aa.account_type IN ('income', 'income_other', 'expense', 'expense_other', 'expense_depreciation', 'expense_direct_cost')
+        """, (fy_start, fy_start, self.ledger_journal_group_id.id or 0, entity.company_id.id, self.date_from))
+        row = self.env.cr.dictfetchone() or {}
+
+        company = entity.company_id
+        cye_account = self.env['account.account'].with_company(company).search([
+            ('company_ids', 'in', company.id), ('account_type', '=', 'equity_unaffected')], limit=1)
+        cye_consol = mapping_by_acc_id.get(cye_account.id) or self.group_id.retained_earnings_account_id
+        re_consol = self.group_id.retained_earnings_account_id or cye_consol
+
+        vals = []
+        for amount, consol_acc, label in (
+            (row.get('current_year') or 0.0, cye_consol, _("Laba rugi tahun berjalan s/d %s (belum ditutup)", fields.Date.to_string(self.date_from - timedelta(days=1)))),
+            (row.get('prior_years') or 0.0, re_consol, _("Laba rugi tahun buku sebelumnya (belum ditutup)")),
+        ):
+            if abs(amount) <= 0.0001 or not consol_acc:
+                continue
+            used_rate = rates.get(consol_acc.translation_rate, 1.0)
+            vals.append({
+                'trial_balance_id': tb.id,
+                'consol_account_id': consol_acc.id,
+                'source_account_id': cye_account.id or False,
+                'external_name': label,
+                'balance_fc': amount,
+                'movement_fc': 0.0,
+                'rate_used': used_rate,
+                'balance_rc': amount * used_rate,
+            })
+        return vals
 
     # ========================================================
     # 1. LOAD TRIAL BALANCES & PSAK 10 TRANSLATION (E10: CTA)
@@ -203,6 +262,10 @@ class ConsolPeriod(models.Model):
                         'rate_used': used_rate,
                         'balance_rc': bal_rc,
                     })
+
+                tb_lines_vals += self._get_earnings_carry_in_lines(
+                    entity, tb, mapping_by_acc_id,
+                    {'closing': c_rate, 'average': a_rate, 'historical': h_rate})
 
                 if tb_lines_vals:
                     self.env['consol.trial.balance.line'].create(tb_lines_vals)
@@ -322,8 +385,11 @@ class ConsolPeriod(models.Model):
     # ========================================================
     def action_generate_eliminations(self):
         self.ensure_one()
-        # Hapus jurnal otomatis lama berstatus draf
-        self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.state == 'draft').unlink()
+        if self.state == 'locked':
+            raise UserError(_("Periode konsolidasi sudah dikunci! Buka kunci terlebih dahulu untuk membuat ulang jurnal eliminasi."))
+        # Hapus seluruh jurnal otomatis lama (draf maupun terposting) agar proses ulang tidak menggandakan
+        # eliminasi. Jurnal manual dan E10 (dibuat saat penarikan neraca saldo) tidak disentuh.
+        self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.code != 'E10').unlink()
 
         # E1: Investasi Induk vs Ekuitas Anak
         self._generate_e1_investment_equity()
@@ -336,6 +402,9 @@ class ConsolPeriod(models.Model):
 
         # Balik jurnal auto_reverse dari periode sebelumnya
         self._reverse_previous_auto_reverse_journals()
+
+        # Buang jurnal otomatis tanpa baris (tidak ada yang perlu dieliminasi)
+        self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.state == 'draft' and not j.line_ids).unlink()
 
         # Posting jurnal otomatis yang seimbang
         for j in self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.state == 'draft'):
@@ -353,6 +422,19 @@ class ConsolPeriod(models.Model):
         ])
 
         for own in ownerships:
+            lines = []
+            # Modal saham entitas anak. Hanya akun modal: jangan pernah jatuh ke seluruh akun ekuitas,
+            # karena ekuitas juga memuat laba tahun berjalan (lihat _get_earnings_carry_in_lines).
+            child_tb = self.trial_balance_ids.filtered(lambda tb: tb.entity_id == own.child_id)
+            cap_lines = child_tb.line_ids.filtered(
+                lambda l: l.statement == 'equity'
+                and l.consol_account_id.account_type == 'equity'
+                and ('capital' in (l.consol_account_id.name or '').lower() or 'modal' in (l.consol_account_id.name or '').lower()))
+            # Saldo kredit (modal disetor) = positif; saldo debit (mis. modal belum disetor) = negatif
+            total_equity_child = -sum(l.balance_rc for l in cap_lines)
+            if total_equity_child <= 0.01:
+                continue
+
             journal = self.env['consol.journal'].create({
                 'period_id': self.id,
                 'name': f"E1: Eliminasi Investasi vs Ekuitas - {own.child_id.name}",
@@ -361,14 +443,6 @@ class ConsolPeriod(models.Model):
                 'recurring': True,
                 'note': f"PSAK 65 par. B86(b) & PSAK 22: Eliminasi kepemilikan saham {own.effective_percentage}% pada {own.child_id.name}.",
             })
-
-            lines = []
-            # Get subsidiary share capital at acquisition date
-            child_tb = self.trial_balance_ids.filtered(lambda tb: tb.entity_id == own.child_id)
-            cap_lines = child_tb.line_ids.filtered(lambda l: l.statement == 'equity' and ('capital' in (l.consol_account_id.name or '').lower() or 'modal' in (l.consol_account_id.name or '').lower()))
-            if not cap_lines:
-                cap_lines = child_tb.line_ids.filtered(lambda l: l.statement == 'equity')
-            total_equity_child = sum(abs(l.balance_rc) for l in cap_lines)
 
             parent_tb = self.trial_balance_ids.filtered(lambda tb: tb.entity_id == own.parent_id)
             # Carrying value of investment for this subsidiary
@@ -391,18 +465,21 @@ class ConsolPeriod(models.Model):
 
             if total_equity_child > 0:
                 for el in cap_lines:
+                    amount = -el.balance_rc
+                    if abs(amount) <= 0.01:
+                        continue
                     lines.append({
                         'journal_id': journal.id,
                         'consol_account_id': el.consol_account_id.id,
                         'entity_id': own.child_id.id,
-                        'debit': abs(el.balance_rc),
-                        'credit': 0.0,
+                        'debit': amount if amount > 0 else 0.0,
+                        'credit': -amount if amount < 0 else 0.0,
                     })
 
                 if inv_amount > 0 and all_inv_lines:
                     lines.append({
                         'journal_id': journal.id,
-                        'consol_account_id': all_inv_lines[0].consol_account_id.id,
+                        'consol_account_id': inv_lines[0].consol_account_id.id,
                         'entity_id': own.parent_id.id,
                         'debit': 0.0,
                         'credit': inv_amount,
