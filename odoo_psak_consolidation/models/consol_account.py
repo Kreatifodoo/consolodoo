@@ -24,9 +24,11 @@ class ConsolAccount(models.Model):
         ('liability_non_current', 'Liabilitas Jangka Panjang'),
         ('equity', 'Ekuitas'),
         ('equity_unaffected', 'Laba Tahun Berjalan'),
+        ('equity_retained', 'Saldo Laba Ditahan'),
         ('income', 'Pendapatan Usaha'),
         ('income_other', 'Pendapatan Lain-lain'),
         ('expense', 'Beban Operasional'),
+        ('expense_other', 'Beban Lain-lain & Keuangan'),
         ('expense_depreciation', 'Penyusutan & Amortisasi'),
         ('expense_direct_cost', 'Beban Pokok Penjualan (HPP)'),
         ('off_balance', 'Di Luar Neraca (Off-Balance)')

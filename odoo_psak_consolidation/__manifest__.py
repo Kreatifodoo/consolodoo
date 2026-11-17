@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Konsolidasi Laporan Keuangan PSAK 65 (IFRS 10)',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Accounting/Accounting',
     'summary': 'Modul Konsolidasi Laporan Keuangan Multi-Entitas Berbasis PSAK 65 / IFRS 10',
     'description': """

@@ -132,7 +132,8 @@ class ConsolGroup(models.Model):
                         if not entity.company_id:
                             entity.write({'company_id': rec.parent_company_id.id, 'source_type': 'odoo'})
                     else:
-                        code = (rec.parent_company_id.code or rec.parent_company_id.name[:10]).strip().upper().replace(' ', '_')
+                        # res.company has no `code` field in Odoo 20
+                        code = (getattr(rec.parent_company_id, 'code', False) or rec.parent_company_id.name[:10]).strip().upper().replace(' ', '_')
                         entity = self.env['consol.entity'].create({
                             'name': rec.parent_company_id.name,
                             'code': code or 'PARENT',

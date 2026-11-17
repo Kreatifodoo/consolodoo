@@ -200,7 +200,7 @@ class ConsolReport(models.Model):
                 elif code == 'NCI_EQ':
                     matched = all_accs.filtered(lambda a: a.code in ['305000'] or ('non-controlling' in (a.name or '').lower() and a.statement == 'bs'))
                 elif code == 'CURR_NI':
-                    matched = all_accs.filtered(lambda a: a.statement == 'pl' or a.account_type in ['income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost'])
+                    matched = all_accs.filtered(lambda a: a.statement == 'pl' or a.account_type in ['income', 'income_other', 'expense', 'expense_other', 'expense_depreciation', 'expense_direct_cost'])
 
             elif self.report_type == 'profit_loss':
                 if code == 'REV':
@@ -208,7 +208,7 @@ class ConsolReport(models.Model):
                 elif code == 'COGS':
                     matched = all_accs.filtered(lambda a: a.account_type == 'expense_direct_cost' or a.code.startswith(('501', '502', '510')))
                 elif code == 'OPEX':
-                    matched = all_accs.filtered(lambda a: (a.account_type in ['expense', 'expense_depreciation'] or a.code.startswith(('601', '602', '611', '671'))) and a.code != '701000' and not a.code.startswith('5'))
+                    matched = all_accs.filtered(lambda a: (a.account_type in ['expense', 'expense_other', 'expense_depreciation'] or a.code.startswith(('601', '602', '611', '671'))) and a.code != '701000' and not a.code.startswith('5'))
                 elif code == 'NCI_ATTRIB':
                     matched = all_accs.filtered(lambda a: a.code == '701000' or ('non-controlling' in (a.name or '').lower() and a.statement == 'pl'))
 

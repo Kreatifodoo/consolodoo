@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import re
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -46,9 +48,11 @@ class ConsolImportCompanyCoaWizard(models.TransientModel):
             'liability_non_current': 'liability_non_current',
             'equity': 'equity',
             'equity_unaffected': 'equity_unaffected',
+            'equity_retained': 'equity_retained',
             'income': 'income',
             'income_other': 'income_other',
             'expense': 'expense',
+            'expense_other': 'expense_other',
             'expense_depreciation': 'expense_depreciation',
             'expense_direct_cost': 'expense_direct_cost',
             'off_balance': 'off_balance',
@@ -72,23 +76,24 @@ class ConsolImportCompanyCoaWizard(models.TransientModel):
             if acc_type.startswith('asset_') or acc_type.startswith('liability_'):
                 statement = 'bs'
                 translation = 'closing'
-            elif acc_type in ['equity', 'equity_unaffected']:
+            elif acc_type in ['equity', 'equity_unaffected', 'equity_retained']:
                 statement = 'equity'
                 translation = 'historical'
-            elif acc_type in ['income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost']:
+            elif acc_type in ['income', 'income_other', 'expense', 'expense_other', 'expense_depreciation', 'expense_direct_cost']:
                 statement = 'pl'
                 translation = 'average'
             else:
                 statement = 'bs'
                 translation = 'closing'
 
-            # Auto-detect intercompany accounts
+            # Auto-detect intercompany accounts ("ic" as a whole word only, so that
+            # names such as "Public Transportation" are not flagged)
             name_lower = (acc.name or '').lower()
             is_ic = (
                 code in ['11210090', '21100090', '41000090', '51000090'] or
                 'intragrup' in name_lower or
                 'intercompany' in name_lower or
-                'ic ' in name_lower or
+                bool(re.search(r'\bic\b', name_lower)) or
                 'antar perusahaan' in name_lower
             )
 

@@ -22,6 +22,15 @@ Tanggal: 17 Nov 2026. Basis: zip `odoo_psak_consolidation` (manifest 19.0.1.0.0)
 
    Sebelumnya semua jurnal ikut tertarik sehingga penyesuaian IFRS & US GAAP terhitung bersamaan dengan PSAK.
 
+## Perbaikan 20.0.1.0.1 (saat setup grup Orch AI)
+
+1. **Wizard *Salin Master Akun dari Perusahaan***:
+   - Tipe akun Odoo 20 `expense_other` (beban bunga, rugi kurs) dan `equity_retained` sekarang dikenali, dan juga ditambahkan ke pilihan tipe *Akun Konsolidasi*.
+   - Sebelumnya kedua tipe ini jatuh ke `asset_current` / Neraca, sehingga beban keuangan tampil sebagai aset dan pasangan IC bunga (71200010 ↔ 72200010) masuk eliminasi neraca, bukan laba rugi.
+2. **Deteksi akun intercompany** memakai kata utuh `ic`. Sebelumnya *Public Transportation* ikut ditandai IC karena mengandung "…ic ".
+3. **Grup Konsolidasi**: `res.company` di Odoo 20 tidak punya field `code`. Membuat grup untuk company yang belum punya entitas sebelumnya error.
+4. Sinkronisasi akun ke template standar (baris CURR_NI & OPEX) ikut memasukkan `expense_other`.
+
 ## Belum diubah
 
 - File lama yang tidak dimuat manifest (`models/consolidation_*.py`, `views/consolidation_*.xml`, `controllers/wp_main.py`, `controllers/xbrl_export_controller.py`) dibiarkan apa adanya (tidak di-import).
