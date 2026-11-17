@@ -130,7 +130,7 @@ class ConsolTrialBalanceLine(models.Model):
 
     rate_used = fields.Float(
         string='Kurs Diterapkan',
-        digits=(12, 6),
+        digits=(24, 12),
         default=1.0)
 
     balance_rc = fields.Float(

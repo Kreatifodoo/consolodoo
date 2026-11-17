@@ -179,4 +179,13 @@
         <field name="statement">pl</field>
         <field name="translation_rate">average</field>
     </record>
+
+    <!-- Kliring selisih kurs penjabaran PSAK 10 per entitas (dibuat saat tarik neraca saldo, dialokasikan oleh E10) -->
+    <record id="consol_acc_cta_translation" model="consol.account">
+        <field name="code">C-CTA-TR</field>
+        <field name="name">Selisih Kurs Penjabaran Entitas (PSAK 10) - sebelum alokasi</field>
+        <field name="account_type">equity</field>
+        <field name="statement">equity</field>
+        <field name="translation_rate">closing</field>
+    </record>
 </odoo>

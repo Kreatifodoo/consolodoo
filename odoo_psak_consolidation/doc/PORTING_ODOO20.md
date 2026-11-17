@@ -52,6 +52,23 @@ Odoo tidak menutup akun laba rugi ke saldo laba. Laba tahun berjalan dihitung di
    - Baris akun IC **tanpa partner** diatribusikan ke entitas lawan bila akun tersebut di entitas itu hanya memiliki satu lawan. Contoh baris seperti ini: jurnal revaluasi kurs akhir bulan Odoo atas pinjaman/bunga IC dalam USD.
    - Saldo yang tidak bisa diatribusikan dicatat di chatter periode.
 
+## Fitur 20.0.1.1.0: penjabaran PSAK 10 & jurnal E10 (CTA)
+
+Engine lama membuat jurnal E10 tanpa baris, sehingga entitas yang mata uang fungsionalnya berbeda dari mata uang grup menghasilkan neraca saldo yang tidak seimbang.
+
+1. **Selisih kurs penjabaran (CTA)**:
+   - Aset & liabilitas dijabarkan dengan kurs penutupan, laba rugi dengan kurs rata-rata, ekuitas dengan kurs historis.
+   - Selisihnya dicatat pada akun kliring baru `C-CTA-TR`, sehingga neraca saldo setiap entitas yang dijabarkan tetap seimbang.
+2. **Jurnal E10** (otomatis, seimbang, terposting): mengalokasikan saldo kliring ke *Akun Selisih Kurs Translasi (CTA - OCI)* grup sesuai persentase pemilik entitas induk, dan sisanya ke *Akun NCI (Ekuitas)*.
+3. **Laba tahun berjalan s/d bulan lalu** pada entitas yang dijabarkan memakai jumlah laba rugi periode-periode sebelumnya yang sudah dijabarkan (masing-masing dengan kurs rata-ratanya). Dengan begitu laba di neraca sama dengan laba di laporan laba rugi.
+4. **Kurs periode** (*Kurs Valuta Asing (PSAK 10)*) diisi otomatis dari tabel kurs Odoo saat record kurs dibuat:
+   - penutupan = fixing pada/sebelum akhir periode;
+   - rata-rata = rata-rata fixing di dalam periode;
+   - historis = fixing pada tanggal kepemilikan paling awal entitas bermata uang tsb, atau fixing pertama bila tanggal itu lebih awal.
+
+   Nilai fixing dibaca langsung dari tabel kurs, karena `_get_conversion_rate` Odoo 20 memakai kurs sebelum tanggal (H-1).
+5. **Presisi kurs** dinaikkan ke 12 desimal. Ini diperlukan untuk grup dengan mata uang penyajian kuat, misalnya 1 IDR = 0,0000551 USD.
+
 ## Belum diubah
 
 - File lama yang tidak dimuat manifest (`models/consolidation_*.py`, `views/consolidation_*.xml`, `controllers/wp_main.py`, `controllers/xbrl_export_controller.py`) dibiarkan apa adanya (tidak di-import).

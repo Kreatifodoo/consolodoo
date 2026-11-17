@@ -127,14 +127,26 @@ class ConsolPeriod(models.Model):
         cye_consol = mapping_by_acc_id.get(cye_account.id) or self.group_id.retained_earnings_account_id
         re_consol = self.group_id.retained_earnings_account_id or cye_consol
 
+        translate = entity.functional_currency_id != self.currency_id
         vals = []
-        for amount, consol_acc, label in (
-            (row.get('current_year') or 0.0, cye_consol, _("Laba rugi tahun berjalan s/d %s (belum ditutup)", fields.Date.to_string(self.date_from - timedelta(days=1)))),
-            (row.get('prior_years') or 0.0, re_consol, _("Laba rugi tahun buku sebelumnya (belum ditutup)")),
+        for amount, consol_acc, label, is_current in (
+            (row.get('current_year') or 0.0, cye_consol, _("Laba rugi tahun berjalan s/d %s (belum ditutup)", fields.Date.to_string(self.date_from - timedelta(days=1))), True),
+            (row.get('prior_years') or 0.0, re_consol, _("Laba rugi tahun buku sebelumnya (belum ditutup)"), False),
         ):
             if abs(amount) <= 0.0001 or not consol_acc:
                 continue
-            used_rate = rates.get(consol_acc.translation_rate, 1.0)
+            if not translate:
+                amount_rc = amount * rates.get(consol_acc.translation_rate, 1.0)
+            elif is_current:
+                # PSAK 10: laba rugi dijabarkan dengan kurs rata-rata tiap periode. Laba tahun berjalan sebelum
+                # periode ini = jumlah laba rugi periode-periode sebelumnya yang sudah dijabarkan, sehingga laba
+                # di neraca selalu sama dengan laba di laporan laba rugi. Bila periode sebelumnya belum lengkap,
+                # dipakai kurs rata-rata periode ini.
+                amount_rc = self._get_translated_prior_profit(entity, amount, fy_start)
+                if amount_rc is None:
+                    amount_rc = amount * rates.get('average', 1.0)
+            else:
+                amount_rc = amount * rates.get('historical', 1.0)
             vals.append({
                 'trial_balance_id': tb.id,
                 'consol_account_id': consol_acc.id,
@@ -142,10 +154,59 @@ class ConsolPeriod(models.Model):
                 'external_name': label,
                 'balance_fc': amount,
                 'movement_fc': 0.0,
-                'rate_used': used_rate,
-                'balance_rc': amount * used_rate,
+                'rate_used': amount_rc / amount if amount else 1.0,
+                'balance_rc': amount_rc,
             })
         return vals
+
+    def _get_translated_prior_profit(self, entity, amount_fc, fy_start):
+        """Jumlah laba rugi (mata uang pelaporan) entitas pada periode grup yang sama di tahun buku berjalan
+        sebelum periode ini, atau None bila periode-periode tersebut tidak mencakup seluruh laba rugi ``amount_fc``."""
+        self.ensure_one()
+        previous = self.search([
+            ('group_id', '=', self.group_id.id),
+            ('id', '!=', self.id),
+            ('date_from', '>=', fy_start),
+            ('date_to', '<', self.date_from),
+        ])
+        if not previous:
+            return None
+        pl_lines = self.env['consol.trial.balance.line'].search([
+            ('period_id', 'in', previous.ids),
+            ('entity_id', '=', entity.id),
+            ('statement', '=', 'pl'),
+        ])
+        amount_prev_fc = sum(pl_lines.mapped('balance_fc'))
+        if abs(amount_prev_fc - amount_fc) > max(1.0, abs(amount_fc) * 1e-6):
+            return None
+        return sum(pl_lines.mapped('balance_rc'))
+
+    def _get_cta_clearing_account(self):
+        """Akun kliring selisih kurs penjabaran per entitas (dialokasikan oleh E10)."""
+        account = self.env.ref('odoo_psak_consolidation.consol_acc_cta_translation', raise_if_not_found=False)
+        if not account:
+            account = self.env['consol.account'].search([('code', '=', 'C-CTA-TR')], limit=1)
+        if not account:
+            account = self.env['consol.account'].create({
+                'code': 'C-CTA-TR',
+                'name': 'Selisih Kurs Penjabaran Entitas (PSAK 10) - sebelum alokasi',
+                'account_type': 'equity',
+                'statement': 'equity',
+                'translation_rate': 'closing',
+            })
+        return account
+
+    def _get_owner_percentage(self, entity):
+        """Persentase kepemilikan efektif pemilik entitas induk atas entitas (100 untuk entitas induk)."""
+        self.ensure_one()
+        if entity == self.group_id.parent_entity_id:
+            return 100.0
+        ownership = self.env['consol.ownership'].search([
+            ('child_id', '=', entity.id),
+            ('parent_id', 'in', self._get_active_entities().ids),
+            ('method', '=', 'full'),
+        ], limit=1)
+        return ownership.effective_percentage if ownership else 100.0
 
     # ========================================================
     # 1. LOAD TRIAL BALANCES & PSAK 10 TRANSLATION (E10: CTA)
@@ -268,62 +329,77 @@ class ConsolPeriod(models.Model):
                     entity, tb, mapping_by_acc_id,
                     {'closing': c_rate, 'average': a_rate, 'historical': h_rate})
 
+                # 5. PSAK 10 / IAS 21 par. 39: aset & liabilitas dijabarkan dengan kurs penutupan, laba rugi
+                #    dengan kurs rata-rata, ekuitas dengan kurs historis. Selisihnya (CTA) dicatat pada akun kliring
+                #    penjabaran agar neraca saldo entitas tetap seimbang; E10 mengalokasikannya ke OCI dan NCI.
+                if entity.functional_currency_id != self.currency_id:
+                    total_rc = sum(v['balance_rc'] for v in tb_lines_vals)
+                    if abs(total_rc) > 0.005:
+                        tb_lines_vals.append({
+                            'trial_balance_id': tb.id,
+                            'consol_account_id': self._get_cta_clearing_account().id,
+                            'external_name': _("Selisih kurs penjabaran PSAK 10 (aset & liabilitas: kurs penutupan; "
+                                               "laba rugi: kurs rata-rata; ekuitas: kurs historis)"),
+                            'balance_fc': 0.0,
+                            'movement_fc': 0.0,
+                            'rate_used': 0.0,
+                            'balance_rc': -total_rc,
+                        })
+
                 if tb_lines_vals:
                     self.env['consol.trial.balance.line'].create(tb_lines_vals)
-
-        # 5. Hitung & Buat Jurnal E10 CTA jika terdapat mata uang asing (PSAK 10)
-        self._generate_cta_elimination()
 
         self.state = 'data_loaded'
         self.message_post(body=_("Neraca saldo seluruh entitas berhasil ditarik dan ditranslasikan."))
 
-    def _generate_cta_elimination(self):
-        """
-        Hitung Selisih Kurs Penjabaran Kumulatif (CTA) untuk entitas dengan
-        mata uang fungsional yang berbeda dari mata uang pelaporan, dicatat ke cta_account_id.
-        """
-        if not self.group_id.cta_account_id:
+    def _generate_e10_cta(self):
+        """E10: Alokasi selisih kurs penjabaran (CTA) per entitas dari akun kliring penjabaran ke cadangan
+        selisih kurs (OCI) pemilik entitas induk dan ke Kepentingan Non-Pengendali (PSAK 10 par. 39(c) & 41,
+        PSAK 65 par. B94)."""
+        cta_account = self.group_id.cta_account_id
+        if not cta_account:
             return
-
-        # Hapus jurnal E10 lama
-        self.journal_ids.filtered(lambda j: j.code == 'E10' and j.origin == 'auto').unlink()
-
-        foreign_tbs = self.trial_balance_ids.filtered(lambda tb: tb.functional_currency_id != self.currency_id)
-        for tb in foreign_tbs:
-            total_rc = sum(l.balance_rc for l in tb.line_ids)
-            if abs(total_rc) > 0.01:
-                cta_journal = self.env['consol.journal'].create({
-                    'period_id': self.id,
-                    'name': f"E10: Selisih Translasi Valuta Asing (CTA) - {tb.entity_id.name}",
-                    'code': 'E10',
-                    'origin': 'auto',
-                    'note': "PSAK 10: Selisih translasi antara kurs penutupan vs kurs rata-rata/historis dicatat pada Penghasilan Komprehensif Lain (CTA).",
+        clearing = self._get_cta_clearing_account()
+        clearing_lines = self.trial_balance_ids.line_ids.filtered(lambda l: l.consol_account_id == clearing)
+        nci_account = self.group_id.nci_equity_account_id
+        for entity in clearing_lines.entity_id:
+            amount = sum(clearing_lines.filtered(lambda l: l.entity_id == entity).mapped('balance_rc'))  # debit +
+            if abs(amount) <= 0.005:
+                continue
+            owner_pct = self._get_owner_percentage(entity)
+            nci_amount = round(amount * (100.0 - owner_pct) / 100.0, 2) if nci_account else 0.0
+            owner_amount = amount - nci_amount
+            journal = self.env['consol.journal'].create({
+                'period_id': self.id,
+                'name': f"E10: Selisih Kurs Penjabaran (CTA) - {entity.name}",
+                'code': 'E10',
+                'origin': 'auto',
+                'note': (f"PSAK 10: selisih penjabaran {entity.functional_currency_id.name} ke "
+                         f"{self.currency_id.name} dialokasikan ke OCI (cadangan selisih kurs) pemilik entitas induk "
+                         f"{owner_pct:.2f}% dan NCI {100.0 - owner_pct:.2f}%."),
+            })
+            line_vals = [{
+                'journal_id': journal.id,
+                'consol_account_id': clearing.id,
+                'entity_id': entity.id,
+                'debit': -amount if amount < 0 else 0.0,
+                'credit': amount if amount > 0 else 0.0,
+            }, {
+                'journal_id': journal.id,
+                'consol_account_id': cta_account.id,
+                'entity_id': entity.id,
+                'debit': owner_amount if owner_amount > 0 else 0.0,
+                'credit': -owner_amount if owner_amount < 0 else 0.0,
+            }]
+            if nci_amount:
+                line_vals.append({
+                    'journal_id': journal.id,
+                    'consol_account_id': nci_account.id,
+                    'entity_id': entity.id,
+                    'debit': nci_amount if nci_amount > 0 else 0.0,
+                    'credit': -nci_amount if nci_amount < 0 else 0.0,
                 })
-
-                lines = []
-                if total_rc > 0:
-                    # Selisih debit, butuh kredit di CTA
-                    lines.append({
-                        'journal_id': cta_journal.id,
-                        'consol_account_id': self.group_id.cta_account_id.id,
-                        'entity_id': tb.entity_id.id,
-                        'credit': total_rc,
-                        'debit': 0.0,
-                    })
-                else:
-                    # Selisih kredit, butuh debit di CTA
-                    lines.append({
-                        'journal_id': cta_journal.id,
-                        'consol_account_id': self.group_id.cta_account_id.id,
-                        'entity_id': tb.entity_id.id,
-                        'debit': abs(total_rc),
-                        'credit': 0.0,
-                    })
-                # Buat baris offset di entitas terkait agar jurnal balance
-                # Offset dialokasikan ke CTA
-                if lines:
-                    # Pada jurnal eliminasi konsolidasi, offset CTA dialokasikan pada baris balancing
-                    pass
+            self.env['consol.journal.line'].create(line_vals)
 
     # ========================================================
     # 2. RUN IC MATCHING (REKONSILIASI INTRAGRUP)
@@ -406,14 +482,17 @@ class ConsolPeriod(models.Model):
         if self.state == 'locked':
             raise UserError(_("Periode konsolidasi sudah dikunci! Buka kunci terlebih dahulu untuk membuat ulang jurnal eliminasi."))
         # Hapus seluruh jurnal otomatis lama (draf maupun terposting) agar proses ulang tidak menggandakan
-        # eliminasi. Jurnal manual dan E10 (dibuat saat penarikan neraca saldo) tidak disentuh.
-        self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.code != 'E10').unlink()
+        # eliminasi. Jurnal manual tidak disentuh.
+        self.journal_ids.filtered(lambda j: j.origin == 'auto').unlink()
 
         # E1: Investasi Induk vs Ekuitas Anak
         self._generate_e1_investment_equity()
 
         # E2: Saldo Antar-Perusahaan (dari hasil IC matching)
         self._generate_e2_ic_balance()
+
+        # E10: Alokasi selisih kurs penjabaran (CTA) ke OCI pemilik induk & NCI
+        self._generate_e10_cta()
 
         # Bawa ke depan jurnal berulang dari periode sebelumnya
         self._carry_forward_recurring_journals()
@@ -430,7 +509,7 @@ class ConsolPeriod(models.Model):
                 j.action_post()
 
         self.state = 'eliminated'
-        self.message_post(body=_("Jurnal eliminasi otomatis (E1, E2, E3, Berulang, Pembalikan) berhasil dibuat."))
+        self.message_post(body=_("Jurnal eliminasi otomatis (E1, E2, E3, E10, Berulang, Pembalikan) berhasil dibuat."))
 
     def _generate_e1_investment_equity(self):
         """E1: Eliminasi Investasi Induk vs Ekuitas Anak, pengakuan awal Goodwill & NCI."""
