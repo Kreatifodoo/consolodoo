@@ -147,6 +147,8 @@ class ConsolPeriod(models.Model):
                     amount_rc = amount * rates.get('average', 1.0)
             else:
                 amount_rc = amount * rates.get('historical', 1.0)
+            if self.currency_id:
+                amount_rc = self.currency_id.round(amount_rc)
             vals.append({
                 'trial_balance_id': tb.id,
                 'consol_account_id': consol_acc.id,
@@ -312,7 +314,8 @@ class ConsolPeriod(models.Model):
                     else:
                         used_rate = h_rate
 
-                    bal_rc = bal_fc * used_rate
+                    # dibulatkan ke presisi mata uang pelaporan agar selisih penjabaran (CTA) menutup tepat 0
+                    bal_rc = self.currency_id.round(bal_fc * used_rate) if self.currency_id else bal_fc * used_rate
 
                     tb_lines_vals.append({
                         'trial_balance_id': tb.id,
@@ -333,7 +336,7 @@ class ConsolPeriod(models.Model):
                 #    dengan kurs rata-rata, ekuitas dengan kurs historis. Selisihnya (CTA) dicatat pada akun kliring
                 #    penjabaran agar neraca saldo entitas tetap seimbang; E10 mengalokasikannya ke OCI dan NCI.
                 if entity.functional_currency_id != self.currency_id:
-                    total_rc = sum(v['balance_rc'] for v in tb_lines_vals)
+                    total_rc = self.currency_id.round(sum(v['balance_rc'] for v in tb_lines_vals))
                     if abs(total_rc) > 0.005:
                         tb_lines_vals.append({
                             'trial_balance_id': tb.id,
