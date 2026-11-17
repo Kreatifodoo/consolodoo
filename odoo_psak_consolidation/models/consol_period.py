@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 from datetime import timedelta
 
 from odoo import models, fields, api, _
@@ -339,46 +340,63 @@ class ConsolPeriod(models.Model):
         # Pasangkan berdasarkan entitas & partner
         entities = self._get_active_entities()
         partner_to_entity = {e.partner_id.id: e for e in entities if e.partner_id}
+        Account = self.env['consol.account']
 
+        # 1. Entitas lawan per (entitas, akun) dari baris yang ber-partner
+        counterparts = defaultdict(set)
+        for line in ic_lines:
+            other = partner_to_entity.get(line.partner_id.id) if line.partner_id else False
+            if other and other != line.entity_id:
+                counterparts[(line.entity_id.id, line.consol_account_id.id)].add(other.id)
+
+        # 2. Saldo per (entitas, akun, entitas lawan). Baris tanpa partner (mis. jurnal revaluasi kurs akhir bulan
+        #    Odoo) diatribusikan ke entitas lawan bila akun IC tersebut hanya memiliki satu lawan.
+        balances = defaultdict(float)
+        unattributed = []
+        for line in ic_lines:
+            other = partner_to_entity.get(line.partner_id.id) if line.partner_id else False
+            if not other:
+                candidates = counterparts.get((line.entity_id.id, line.consol_account_id.id), set())
+                if len(candidates) == 1:
+                    other = self.env['consol.entity'].browse(next(iter(candidates)))
+            if not other:
+                if abs(line.balance_rc) > 0.01:
+                    unattributed.append(line)
+                continue
+            if other == line.entity_id:
+                continue
+            balances[(line.entity_id.id, line.consol_account_id.id, other.id)] += line.balance_rc
+
+        # 3. Pasangkan dengan saldo akun lawan di entitas lawan
         matched_pairs = []
         processed_keys = set()
+        for (entity_a_id, account_a_id, entity_b_id), amount_a in balances.items():
+            account_a = Account.browse(account_a_id)
+            account_b = account_a.ic_counterpart_id or Account.search([('ic_counterpart_id', '=', account_a.id)], limit=1) or account_a
 
-        for line_a in ic_lines:
-            entity_a = line_a.entity_id
-            partner_b = line_a.partner_id
-            if not partner_b or partner_b.id not in partner_to_entity:
-                continue
-
-            entity_b = partner_to_entity[partner_b.id]
-            if entity_a == entity_b:
-                continue
-
-            account_a = line_a.consol_account_id
-            account_b = account_a.ic_counterpart_id or self.env['consol.account'].search([('ic_counterpart_id', '=', account_a.id)], limit=1) or account_a
-
-            pair_key = (min(entity_a.id, entity_b.id), max(entity_a.id, entity_b.id), min(account_a.id, account_b.id), max(account_a.id, account_b.id))
+            pair_key = (min(entity_a_id, entity_b_id), max(entity_a_id, entity_b_id), min(account_a.id, account_b.id), max(account_a.id, account_b.id))
             if pair_key in processed_keys:
                 continue
             processed_keys.add(pair_key)
 
-            # Cari saldo pasangan di entitas B
-            line_b = ic_lines.filtered(lambda l: l.entity_id == entity_b and l.partner_id == entity_a.partner_id and l.consol_account_id == account_b)
-            amount_b = sum(l.balance_rc for l in line_b) if line_b else 0.0
-
             matched_pairs.append({
                 'period_id': self.id,
-                'entity_a_id': entity_a.id,
-                'entity_b_id': entity_b.id,
+                'entity_a_id': entity_a_id,
+                'entity_b_id': entity_b_id,
                 'account_a_id': account_a.id,
                 'account_b_id': account_b.id,
-                'amount_a': line_a.balance_rc,
-                'amount_b': amount_b,
+                'amount_a': amount_a,
+                'amount_b': balances.get((entity_b_id, account_b.id, entity_a_id), 0.0),
             })
 
         if matched_pairs:
             self.env['consol.intercompany.match'].create(matched_pairs)
 
-        self.message_post(body=_("Rekonsiliasi transaksi & saldo antar-perusahaan (IC Matching) selesai."))
+        body = _("Rekonsiliasi transaksi & saldo antar-perusahaan (IC Matching) selesai.")
+        if unattributed:
+            body += " " + _("Saldo akun IC tanpa entitas lawan (tidak dieliminasi otomatis): %s",
+                            "; ".join(f"{l.entity_id.code} {l.consol_account_id.code} {l.balance_rc:,.2f}" for l in unattributed))
+        self.message_post(body=body)
 
     # ========================================================
     # 3. GENERATE ELIMINATIONS (E1, E2, E3, E6, CARRY FORWARD)
@@ -520,10 +538,15 @@ class ConsolPeriod(models.Model):
             for m in bs_matches:
                 elim_amount = min(abs(m.amount_a), abs(m.amount_b))
                 if elim_amount > 0:
-                    ar_acc = m.account_a_id if 'receivable' in m.account_a_id.account_type else m.account_b_id
-                    ar_ent = m.entity_a_id if ar_acc == m.account_a_id else m.entity_b_id
-                    ap_acc = m.account_b_id if ar_acc == m.account_a_id else m.account_a_id
-                    ap_ent = m.entity_b_id if ar_acc == m.account_a_id else m.entity_a_id
+                    # Sisi aset (piutang, piutang bunga, pinjaman diberikan) dikredit; sisi liabilitas didebit.
+                    # Dulu hanya tipe 'receivable' yang dikenali, sehingga pasangan pinjaman/bunga IC terbalik arah.
+                    a_is_asset = (m.account_a_id.account_type or '').startswith('asset')
+                    b_is_asset = (m.account_b_id.account_type or '').startswith('asset')
+                    a_is_ar_side = a_is_asset if a_is_asset != b_is_asset else m.amount_a >= 0
+                    ar_acc = m.account_a_id if a_is_ar_side else m.account_b_id
+                    ar_ent = m.entity_a_id if a_is_ar_side else m.entity_b_id
+                    ap_acc = m.account_b_id if a_is_ar_side else m.account_a_id
+                    ap_ent = m.entity_b_id if a_is_ar_side else m.entity_a_id
 
                     lines_bs.append({
                         'journal_id': journal_bs.id,

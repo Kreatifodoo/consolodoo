@@ -44,6 +44,14 @@ Odoo tidak menutup akun laba rugi ke saldo laba. Laba tahun berjalan dihitung di
    - Jurnal kosong tidak dibuat.
 5. **Generate Eliminations** bisa dijalankan ulang: seluruh jurnal otomatis lama, termasuk yang sudah terposting kecuali E10, dihapus lebih dulu, sehingga eliminasi tidak dobel. Periode terkunci ditolak.
 
+## Perbaikan 20.0.1.0.3 (eliminasi saldo antar-perusahaan)
+
+1. **E2 terbalik arah untuk pasangan IC non-dagang** (pinjaman, bunga, rekening koran). Engine lama hanya mengenali sisi aset dari tipe `asset_receivable`, sehingga pinjaman IC didebit (didobelkan), bukan dieliminasi. Sekarang sisi aset ditentukan dari tipe akun aset, dengan cadangan dari tanda saldo.
+2. **IC Matching**:
+   - Saldo dijumlah per (entitas, akun, entitas lawan).
+   - Baris akun IC **tanpa partner** diatribusikan ke entitas lawan bila akun tersebut di entitas itu hanya memiliki satu lawan. Contoh baris seperti ini: jurnal revaluasi kurs akhir bulan Odoo atas pinjaman/bunga IC dalam USD.
+   - Saldo yang tidak bisa diatribusikan dicatat di chatter periode.
+
 ## Belum diubah
 
 - File lama yang tidak dimuat manifest (`models/consolidation_*.py`, `views/consolidation_*.xml`, `controllers/wp_main.py`, `controllers/xbrl_export_controller.py`) dibiarkan apa adanya (tidak di-import).
