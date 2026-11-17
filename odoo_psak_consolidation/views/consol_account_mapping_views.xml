@@ -4,7 +4,7 @@
         <field name="name">consol.account.mapping.tree</field>
         <field name="model">consol.account.mapping</field>
         <field name="arch" type="xml">
-            <list string="Entity Account Mappings" editable="bottom">
+            <list string="Pemetaan Akun Entitas" editable="bottom">
                 <field name="entity_id"/>
                 <field name="account_id"/>
                 <field name="external_code"/>
@@ -18,27 +18,27 @@
         <field name="name">consol.account.mapping.search</field>
         <field name="model">consol.account.mapping</field>
         <field name="arch" type="xml">
-            <search string="Search Account Mappings">
+            <search string="Cari Pemetaan Akun">
                 <field name="entity_id"/>
                 <field name="account_id"/>
                 <field name="external_code"/>
                 <field name="consol_account_id"/>
                 <group>
-                    <filter string="Entity" name="group_entity" domain="" context="{'group_by': 'entity_id'}"/>
-                    <filter string="Consolidation Account" name="group_consol_acc" domain="" context="{'group_by': 'consol_account_id'}"/>
+                    <filter string="Entitas" name="group_entity" domain="" context="{'group_by': 'entity_id'}"/>
+                    <filter string="Akun Konsolidasi" name="group_consol_acc" domain="" context="{'group_by': 'consol_account_id'}"/>
                 </group>
             </search>
         </field>
     </record>
 
     <record id="action_consol_account_mapping" model="ir.actions.act_window">
-        <field name="name">Entity Account Mappings</field>
+        <field name="name">Pemetaan Akun Entitas</field>
         <field name="res_model">consol.account.mapping</field>
         <field name="view_mode">list</field>
         <field name="search_view_id" ref="view_consol_account_mapping_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Map subsidiary accounts to the consolidation chart of accounts!
+                Petakan akun buku besar entitas ke bagan akun konsolidasi!
             </p>
         </field>
     </record>

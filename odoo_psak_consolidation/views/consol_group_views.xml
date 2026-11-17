@@ -4,7 +4,7 @@
         <field name="name">consol.group.tree</field>
         <field name="model">consol.group</field>
         <field name="arch" type="xml">
-            <list string="Consolidation Groups">
+            <list string="Grup Konsolidasi">
                 <field name="name"/>
                 <field name="parent_company_id"/>
                 <field name="parent_entity_id" optional="show"/>
@@ -18,24 +18,24 @@
         <field name="name">consol.group.form</field>
         <field name="model">consol.group</field>
         <field name="arch" type="xml">
-            <form string="Consolidation Group">
+            <form string="Grup Konsolidasi">
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" string="Consolidation Group Name"/>
+                        <label for="name" string="Nama Grup Konsolidasi"/>
                         <h1>
-                            <field name="name" placeholder="e.g. PT ABC Group"/>
+                            <field name="name" placeholder="Contoh: PT ABC Group"/>
                         </h1>
                     </div>
                     <group>
-                        <group string="Main Parameters">
-                            <field name="parent_company_id" string="Ultimate Parent Company (Odoo Company)"/>
-                            <field name="parent_entity_id" string="Parent Consolidation Entity" readonly="1" force_save="1"/>
+                        <group string="Parameter Utama">
+                            <field name="parent_company_id" string="Perusahaan Induk Tertinggi (Odoo Company)"/>
+                            <field name="parent_entity_id" string="Entitas Konsolidasi Induk" readonly="1" force_save="1"/>
                             <field name="currency_id"/>
                             <field name="fiscal_year_start"/>
                             <field name="rounding"/>
                             <field name="ic_tolerance"/>
                         </group>
-                        <group string="Special Consolidation Accounts">
+                        <group string="Akun Khusus Konsolidasi">
                             <field name="cta_account_id"/>
                             <field name="goodwill_account_id"/>
                             <field name="retained_earnings_account_id"/>
@@ -44,10 +44,10 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Member Entities">
+                        <page string="Anggota Entitas">
                             <field name="entity_ids" widget="many2many_tags"/>
                         </page>
-                        <page string="Multi-Tier Consolidation Sub-Groups">
+                        <page string="Sub-Grup Konsolidasi Bertingkat">
                             <field name="sub_group_ids">
                                 <list>
                                     <field name="name"/>
@@ -56,8 +56,8 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Group Accounting Policies">
-                            <field name="note" placeholder="Uniform accounting policy description and PSAK 65 consolidation guidelines..."/>
+                        <page string="Kebijakan Akuntansi Grup">
+                            <field name="note" placeholder="Catatan kebijakan akuntansi seragam dan pedoman konsolidasi PSAK 65..."/>
                         </page>
                     </notebook>
                 </sheet>
@@ -67,12 +67,12 @@
     </record>
 
     <record id="action_consol_group" model="ir.actions.act_window">
-        <field name="name">Consolidation Groups</field>
+        <field name="name">Grup Konsolidasi</field>
         <field name="res_model">consol.group</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Configure your financial consolidation group!
+                Konfigurasikan grup konsolidasi keuangan Anda!
             </p>
         </field>
     </record>

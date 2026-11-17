@@ -4,54 +4,55 @@ from odoo.exceptions import UserError, ValidationError
 
 class ConsolAccountMapping(models.Model):
     _name = 'consol.account.mapping'
-    _description = 'Entity to Consolidation Account Mapping'
+    _description = 'Pemetaan Akun Entitas ke Akun Konsolidasi'
     _inherit = ['mail.thread']
     _order = 'entity_id, consol_account_id'
 
     entity_id = fields.Many2one(
         'consol.entity',
-        string='Entity',
+        string='Entitas Konsolidasi',
         required=True,
         ondelete='cascade',
         tracking=True)
 
     account_id = fields.Many2one(
         'account.account',
-        string='Source Account (Odoo)',
+        string='Akun Asal (Odoo)',
         ondelete='cascade',
         tracking=True,
-        help="Account in local Odoo Chart of Accounts.")
+        help="Akun dalam buku besar Odoo lokal entitas.")
 
     external_code = fields.Char(
-        string='External Account Code (Import)',
+        string='Kode Akun Eksternal (Impor)',
         tracking=True,
-        help="Account code from external entity imported via CSV/XLSX.")
+        help="Kode akun dari entitas eksternal yang diimpor via CSV/Excel.")
 
     external_name = fields.Char(
-        string='External Account Name',
-        help="Original account name from external entity.")
+        string='Nama Akun Eksternal',
+        help="Nama akun asli dari entitas eksternal.")
 
     consol_account_id = fields.Many2one(
         'consol.account',
-        string='Consolidation Account (Target)',
+        string='Akun Konsolidasi (Tujuan)',
         required=True,
         ondelete='restrict',
         tracking=True,
-        help="Target consolidation account where balance will be mapped.")
+        help="Akun konsolidasi tujuan tempat saldo akun akan dipetakan.")
 
     source_account_code = fields.Char(
-        string='Source Account Code',
+        string='Kode Akun Asal',
         compute='_compute_source_account_info',
         store=True)
 
     source_account_name = fields.Char(
-        string='Source Account Name',
+        string='Nama Akun Asal',
         compute='_compute_source_account_info',
         store=True)
 
-    _sql_constraints = [
-        ('entity_account_unique', 'unique(entity_id, account_id)', 'Account mapping for this entity and Odoo account already exists!'),
-    ]
+    _entity_account_unique = models.Constraint(
+        'unique(entity_id, account_id)',
+        'Pemetaan akun untuk entitas dan akun Odoo ini sudah ada!',
+    )
 
     @api.depends('account_id', 'external_code', 'external_name')
     def _compute_source_account_info(self):
@@ -67,17 +68,17 @@ class ConsolAccountMapping(models.Model):
     def _check_source_account(self):
         for rec in self:
             if not rec.account_id and not rec.external_code:
-                raise ValidationError(_("Must specify either Source Odoo Account or External Account Code!"))
+                raise ValidationError(_("Wajib menentukan salah satu antara Akun Asal Odoo atau Kode Akun Eksternal!"))
 
     @api.model
     def auto_map_accounts(self, entity_id):
         """
-        Automatically match source Odoo accounts to consolidation accounts
-        based on exact code match or prefix match.
+        Secara otomatis mencocokkan akun asal Odoo dengan akun konsolidasi
+        berdasarkan kesesuaian kode persis atau kesesuaian awalan kode.
         """
         entity = self.env['consol.entity'].browse(entity_id)
         if not entity.exists():
-            raise UserError(_("Entity not found!"))
+            raise UserError(_("Entitas tidak ditemukan!"))
 
         if entity.source_type == 'odoo':
             accounts = self.env['account.account'].search([])

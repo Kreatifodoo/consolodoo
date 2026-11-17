@@ -4,7 +4,7 @@
         <field name="name">consol.entity.tree</field>
         <field name="model">consol.entity</field>
         <field name="arch" type="xml">
-            <list string="Consolidation Entities">
+            <list string="Entitas Konsolidasi">
                 <field name="code"/>
                 <field name="name"/>
                 <field name="company_id"/>
@@ -20,32 +20,32 @@
         <field name="name">consol.entity.form</field>
         <field name="model">consol.entity</field>
         <field name="arch" type="xml">
-            <form string="Consolidation Entity">
+            <form string="Entitas Konsolidasi">
                 <sheet>
                     <div class="oe_title">
-                        <label for="code" string="Entity Short Code (Worksheet Header)"/>
+                        <label for="code" string="Kode Singkat Entitas (Header Kertas Kerja)"/>
                         <h1>
-                            <field name="code" placeholder="e.g. PT_ABC"/>
+                            <field name="code" placeholder="Contoh: PT_ABC"/>
                         </h1>
-                        <label for="name" string="Entity Full Name"/>
+                        <label for="name" string="Nama Lengkap Entitas"/>
                         <h2>
-                            <field name="name" placeholder="e.g. PT ABC Industry"/>
+                            <field name="name" placeholder="Contoh: PT ABC Indonesia"/>
                         </h2>
                     </div>
                     <group>
-                        <group string="Profile &amp; Data Source">
+                        <group string="Profil &amp; Sumber Data">
                             <field name="source_type"/>
                             <field name="company_id" invisible="source_type != 'odoo'"/>
                             <field name="functional_currency_id"/>
                             <field name="partner_id"/>
                         </group>
-                        <group string="Special Provisions (PSAK 65)">
+                        <group string="Ketentuan Khusus (PSAK 65)">
                             <field name="is_investment_entity"/>
                             <field name="active"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Ownership Structure (Owned By)">
+                        <page string="Struktur Kepemilikan (Dimiliki Oleh)">
                             <field name="parent_ownership_ids">
                                 <list editable="bottom">
                                     <field name="parent_id"/>
@@ -58,7 +58,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Investment in Other Entities (Owns)">
+                        <page string="Investasi pada Entitas Lain (Memiliki)">
                             <field name="child_ownership_ids">
                                 <list editable="bottom">
                                     <field name="child_id"/>
@@ -71,7 +71,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Notes">
+                        <page string="Catatan">
                             <field name="note"/>
                         </page>
                     </notebook>
@@ -82,12 +82,12 @@
     </record>
 
     <record id="action_consol_entity" model="ir.actions.act_window">
-        <field name="name">Consolidation Entities</field>
+        <field name="name">Entitas Konsolidasi</field>
         <field name="res_model">consol.entity</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Register parent entities and subsidiaries for consolidation!
+                Daftarkan entitas induk dan entitas anak untuk konsolidasi laporan keuangan!
             </p>
         </field>
     </record>

@@ -4,31 +4,31 @@ from odoo.exceptions import UserError
 
 class ConsolImportCompanyCoaWizard(models.TransientModel):
     _name = 'consol.import.company.coa.wizard'
-    _description = 'Import Company Chart of Accounts & Auto-Map Wizard'
+    _description = 'Wisard Impor Bagan Akun Perusahaan & Pemetaan Otomatis'
 
     company_id = fields.Many2one(
         'res.company',
-        string='Select Source Company CoA',
+        string='Pilih Perusahaan Sumber Bagan Akun',
         required=True,
         default=lambda self: self.env.company,
-        help="The Chart of Accounts from this company will be copied to Consolidation Accounts.")
+        help="Bagan Akun dari perusahaan ini akan disalin ke Bagan Akun Konsolidasi.")
 
     auto_map_entities = fields.Boolean(
-        string='Auto-Map to All Odoo Entities',
+        string='Petakan Otomatis ke Seluruh Entitas Odoo',
         default=True,
-        help="If checked, consolidation accounts will be automatically mapped to all entities sharing the same account codes.")
+        help="Jika dicentang, akun konsolidasi akan secara otomatis dipetakan ke seluruh entitas yang memiliki kode akun yang sama.")
 
     update_existing = fields.Boolean(
-        string='Update Existing Consolidation Accounts',
+        string='Perbarui Akun Konsolidasi yang Sudah Ada',
         default=True,
-        help="Update name, type, and statement classification if account code already exists.")
+        help="Perbarui nama, tipe, dan klasifikasi laporan keuangan jika kode akun sudah ada.")
 
     def action_import_and_map(self):
         self.ensure_one()
         company = self.company_id
         accounts = self.env['account.account'].with_company(company).search([('company_ids', 'in', company.id)])
         if not accounts:
-            raise UserError(_("No accounts found for company %s!", company.name))
+            raise UserError(_("Tidak ditemukan akun untuk perusahaan %s!", company.name))
 
         ConsolAccount = self.env['consol.account']
         ConsolMapping = self.env['consol.account.mapping']
@@ -161,10 +161,10 @@ class ConsolImportCompanyCoaWizard(models.TransientModel):
         self.env['consol.report'].sync_all_reports_accounts()
 
         msg = _(
-            "Successfully imported Chart of Accounts from %(company)s!\n"
-            "- New Consolidation Accounts: %(created)d\n"
-            "- Updated Consolidation Accounts: %(updated)d\n"
-            "- Total Entity Account Mappings Created: %(mapped)d",
+            "Berhasil mengimpor Bagan Akun dari %(company)s!\n"
+            "- Akun Konsolidasi Baru: %(created)d\n"
+            "- Akun Konsolidasi Diperbarui: %(updated)d\n"
+            "- Total Pemetaan Akun Entitas Dibuat: %(mapped)d",
             company=company.name,
             created=created_acc_count,
             updated=updated_acc_count,
@@ -175,7 +175,7 @@ class ConsolImportCompanyCoaWizard(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('CoA Import & Mapping Succeeded'),
+                'title': _('Impor & Pemetaan Akun Berhasil'),
                 'message': msg,
                 'sticky': False,
                 'type': 'success',

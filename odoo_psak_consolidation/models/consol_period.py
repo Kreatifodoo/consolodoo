@@ -4,69 +4,74 @@ from odoo.exceptions import UserError, ValidationError
 
 class ConsolPeriod(models.Model):
     _name = 'consol.period'
-    _description = 'Consolidation Financial Process Period'
+    ledger_journal_group_id = fields.Many2one(
+        'account.journal.group', string='GAAP Ledger',
+        help="Empty = statutory books only (Local GAAP / PSAK). "
+             "Select a ledger (e.g. IFRS or US GAAP) to add that ledger's posted adjustments "
+             "on top of the Local GAAP books when extracting trial balances.")
+    _description = 'Periode Proses Konsolidasi Keuangan'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date_to desc, id desc'
 
-    name = fields.Char(string='Period Name', required=True, tracking=True)
+    name = fields.Char(string='Nama Periode', required=True, tracking=True)
     
     group_id = fields.Many2one(
         'consol.group',
-        string='Consolidation Group',
+        string='Grup Konsolidasi',
         required=True,
         tracking=True,
         ondelete='cascade')
 
     currency_id = fields.Many2one(
         'res.currency',
-        string='Reporting Currency',
+        string='Mata Uang Pelaporan',
         related='group_id.currency_id',
         store=True)
 
-    date_from = fields.Date(string='Start Date', required=True, tracking=True)
-    date_to = fields.Date(string='End Date', required=True, tracking=True)
+    date_from = fields.Date(string='Tanggal Mulai', required=True, tracking=True)
+    date_to = fields.Date(string='Tanggal Selesai', required=True, tracking=True)
 
     state = fields.Selection([
-        ('draft', 'Draft'),
-        ('data_loaded', 'Trial Balance Loaded'),
-        ('eliminated', 'Consolidated & Eliminated'),
-        ('review', 'Under Review'),
-        ('locked', 'Locked')
+        ('draft', 'Draf'),
+        ('data_loaded', 'Neraca Saldo Ditarik'),
+        ('eliminated', 'Terkonsolidasi & Tereliminasi'),
+        ('review', 'Sedang Ditinjau'),
+        ('locked', 'Terkunci')
     ], string='Status', default='draft', required=True, tracking=True)
 
     rate_ids = fields.One2many(
         'consol.rate',
         'period_id',
-        string='Period Exchange Rates (PSAK 10)')
+        string='Kurs Valuta Asing (PSAK 10)')
 
     trial_balance_ids = fields.One2many(
         'consol.trial.balance',
         'period_id',
-        string='Entity Trial Balances')
+        string='Neraca Saldo Entitas')
 
     match_ids = fields.One2many(
         'consol.intercompany.match',
         'period_id',
-        string='Intercompany Reconciliation')
+        string='Rekonsiliasi Antar-Perusahaan')
 
     journal_ids = fields.One2many(
         'consol.journal',
         'period_id',
-        string='Elimination Journals')
+        string='Jurnal Eliminasi')
 
     ic_difference_total = fields.Monetary(
-        string='Total Intercompany Difference',
+        string='Total Selisih Antar-Perusahaan',
         currency_field='currency_id',
         compute='_compute_ic_difference_total',
         store=True)
 
     unmatched_ic_count = fields.Integer(
-        string='Unmatched IC Differences Exceeding Tolerance',
+        string='Jumlah Selisih Belum Cocok',
         compute='_compute_ic_difference_total',
         store=True)
 
-    locked_by = fields.Many2one('res.users', string='Locked By', readonly=True, tracking=True)
-    locked_date = fields.Datetime(string='Lock Date', readonly=True, tracking=True)
+    locked_by = fields.Many2one('res.users', string='Dikunci Oleh', readonly=True, tracking=True)
+    locked_date = fields.Datetime(string='Tanggal Penguncian', readonly=True, tracking=True)
 
     @api.depends('match_ids.difference', 'match_ids.status', 'match_ids.is_overridden')
     def _compute_ic_difference_total(self):
@@ -75,7 +80,7 @@ class ConsolPeriod(models.Model):
             rec.unmatched_ic_count = len(rec.match_ids.filtered(lambda m: m.status == 'unmatched' and not m.is_overridden))
 
     def _get_active_entities(self):
-        """Get active entities consolidated in this period's date range."""
+        """Ambil entitas aktif yang dikonsolidasikan pada rentang tanggal periode ini."""
         self.ensure_one()
         entities = self.group_id.entity_ids
         if self.group_id.parent_entity_id:
@@ -89,7 +94,7 @@ class ConsolPeriod(models.Model):
         self.ensure_one()
         entities = self._get_active_entities()
         if not entities:
-            raise UserError(_("No entities registered in Consolidation Group '%s'!", self.group_id.name))
+            raise UserError(_("Tidak ada entitas yang terdaftar dalam Grup Konsolidasi '%s'!", self.group_id.name))
 
         # 1. Unmapped Accounts Validation
         unmapped_errors = []
@@ -104,10 +109,10 @@ class ConsolPeriod(models.Model):
                 unmapped = all_accs.filtered(lambda a: a.id not in mapped_acc_ids)
                 if unmapped:
                     unmapped_codes = [str(a.with_company(entity.company_id).code or a.id) for a in unmapped[:3]]
-                    unmapped_errors.append(f"{entity.name}: {len(unmapped)} accounts unmapped ({', '.join(unmapped_codes)}...)")
+                    unmapped_errors.append(f"{entity.name}: {len(unmapped)} akun belum dipetakan ({', '.join(unmapped_codes)}...)")
 
         if unmapped_errors:
-            raise UserError(_("Process aborted! Unmapped accounts found:\n" + "\n".join(unmapped_errors) + "\n\nPlease complete Entity Account Mapping first or use the Auto-Map feature!"))
+            raise UserError(_("Proses dibatalkan! Ditemukan akun yang belum dipetakan:\n" + "\n".join(unmapped_errors) + "\n\nHarap lengkapi Pemetaan Akun Entitas terlebih dahulu atau gunakan fitur Salin & Petakan Otomatis!"))
 
         # 2. Prepare Period Exchange Rates
         for entity in entities:
@@ -138,14 +143,16 @@ class ConsolPeriod(models.Model):
                     FROM account_move_line aml
                     JOIN account_move am ON am.id = aml.move_id
                     JOIN account_account aa ON aa.id = aml.account_id
+                    JOIN account_journal aj ON aj.id = aml.journal_id
                     WHERE am.state = 'posted'
+                      AND (aj.journal_group_id IS NULL OR aj.journal_group_id = %s)
                       AND aml.company_id = %s
                       AND aml.date <= %s
-                      AND aa.account_type IN ('asset_receivable', 'asset_cash', 'asset_current', 'asset_non_current', 'asset_prepayments', 'asset_fixed', 'liability_payable', 'liability_credit_card', 'liability_current', 'liability_non_current', 'equity', 'equity_unaffected')
+                      AND aa.account_type IN ('asset_receivable', 'asset_cash', 'asset_current', 'asset_non_current', 'asset_prepayments', 'asset_fixed', 'liability_payable', 'liability_credit_card', 'liability_current', 'liability_non_current', 'equity', 'equity_unaffected', 'equity_retained')
                     GROUP BY aml.account_id, aml.partner_id
                     HAVING ABS(SUM(aml.balance)) > 0.0001
                 """
-                self.env.cr.execute(bs_query, (entity.company_id.id, self.date_to))
+                self.env.cr.execute(bs_query, (self.ledger_journal_group_id.id or 0, entity.company_id.id, self.date_to))
                 bs_results = self.env.cr.dictfetchall()
 
                 # Query posted lines for P&L & OCI accounts (movement YTD date_from <= date <= date_to)
@@ -154,15 +161,17 @@ class ConsolPeriod(models.Model):
                     FROM account_move_line aml
                     JOIN account_move am ON am.id = aml.move_id
                     JOIN account_account aa ON aa.id = aml.account_id
+                    JOIN account_journal aj ON aj.id = aml.journal_id
                     WHERE am.state = 'posted'
+                      AND (aj.journal_group_id IS NULL OR aj.journal_group_id = %s)
                       AND aml.company_id = %s
                       AND aml.date >= %s
                       AND aml.date <= %s
-                      AND aa.account_type IN ('income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost')
+                      AND aa.account_type IN ('income', 'income_other', 'expense', 'expense_other', 'expense_depreciation', 'expense_direct_cost')
                     GROUP BY aml.account_id, aml.partner_id
                     HAVING ABS(SUM(aml.balance)) > 0.0001
                 """
-                self.env.cr.execute(pl_query, (entity.company_id.id, self.date_from, self.date_to))
+                self.env.cr.execute(pl_query, (self.ledger_journal_group_id.id or 0, entity.company_id.id, self.date_from, self.date_to))
                 pl_results = self.env.cr.dictfetchall()
 
                 tb_lines_vals = []
@@ -198,21 +207,21 @@ class ConsolPeriod(models.Model):
                 if tb_lines_vals:
                     self.env['consol.trial.balance.line'].create(tb_lines_vals)
 
-        # 5. Compute & Create E10 CTA Journal if foreign currency (PSAK 10)
+        # 5. Hitung & Buat Jurnal E10 CTA jika terdapat mata uang asing (PSAK 10)
         self._generate_cta_elimination()
 
         self.state = 'data_loaded'
-        self.message_post(body=_("Trial balance for all entities loaded and translated successfully."))
+        self.message_post(body=_("Neraca saldo seluruh entitas berhasil ditarik dan ditranslasikan."))
 
     def _generate_cta_elimination(self):
         """
-        Compute Cumulative Translation Adjustment (CTA) for entities with
-        functional currency different from reporting currency, recorded to cta_account_id.
+        Hitung Selisih Kurs Penjabaran Kumulatif (CTA) untuk entitas dengan
+        mata uang fungsional yang berbeda dari mata uang pelaporan, dicatat ke cta_account_id.
         """
         if not self.group_id.cta_account_id:
             return
 
-        # Delete old E10 journal
+        # Hapus jurnal E10 lama
         self.journal_ids.filtered(lambda j: j.code == 'E10' and j.origin == 'auto').unlink()
 
         foreign_tbs = self.trial_balance_ids.filtered(lambda tb: tb.functional_currency_id != self.currency_id)
@@ -221,10 +230,10 @@ class ConsolPeriod(models.Model):
             if abs(total_rc) > 0.01:
                 cta_journal = self.env['consol.journal'].create({
                     'period_id': self.id,
-                    'name': f"E10: Foreign Currency Translation (CTA) - {tb.entity_id.name}",
+                    'name': f"E10: Selisih Translasi Valuta Asing (CTA) - {tb.entity_id.name}",
                     'code': 'E10',
                     'origin': 'auto',
-                    'note': "PSAK 10: Translation difference between closing rate vs average/historical rate recorded in Other Comprehensive Income (CTA).",
+                    'note': "PSAK 10: Selisih translasi antara kurs penutupan vs kurs rata-rata/historis dicatat pada Penghasilan Komprehensif Lain (CTA).",
                 })
 
                 lines = []
@@ -306,38 +315,38 @@ class ConsolPeriod(models.Model):
         if matched_pairs:
             self.env['consol.intercompany.match'].create(matched_pairs)
 
-        self.message_post(body=_("Intercompany reconciliation (IC Matching) completed."))
+        self.message_post(body=_("Rekonsiliasi transaksi & saldo antar-perusahaan (IC Matching) selesai."))
 
     # ========================================================
     # 3. GENERATE ELIMINATIONS (E1, E2, E3, E6, CARRY FORWARD)
     # ========================================================
     def action_generate_eliminations(self):
         self.ensure_one()
-        # Delete old draft automated journals
+        # Hapus jurnal otomatis lama berstatus draf
         self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.state == 'draft').unlink()
 
-        # E1: Parent Investment vs Subsidiary Equity
+        # E1: Investasi Induk vs Ekuitas Anak
         self._generate_e1_investment_equity()
 
-        # E2: Intercompany Balances (from IC matching results)
+        # E2: Saldo Antar-Perusahaan (dari hasil IC matching)
         self._generate_e2_ic_balance()
 
-        # Carry forward recurring journals from previous period
+        # Bawa ke depan jurnal berulang dari periode sebelumnya
         self._carry_forward_recurring_journals()
 
-        # Reverse auto_reverse journals from previous period
+        # Balik jurnal auto_reverse dari periode sebelumnya
         self._reverse_previous_auto_reverse_journals()
 
-        # Post balanced automated journals
+        # Posting jurnal otomatis yang seimbang
         for j in self.journal_ids.filtered(lambda j: j.origin == 'auto' and j.state == 'draft'):
             if round(j.total_debit, 2) == round(j.total_credit, 2) and j.line_ids:
                 j.action_post()
 
         self.state = 'eliminated'
-        self.message_post(body=_("Automated elimination journals (E1, E2, Recurring, Reversals) generated successfully."))
+        self.message_post(body=_("Jurnal eliminasi otomatis (E1, E2, E3, Berulang, Pembalikan) berhasil dibuat."))
 
     def _generate_e1_investment_equity(self):
-        """E1: Elimination of Parent Investment vs Subsidiary Equity, initial Goodwill & NCI recognition."""
+        """E1: Eliminasi Investasi Induk vs Ekuitas Anak, pengakuan awal Goodwill & NCI."""
         ownerships = self.env['consol.ownership'].search([
             ('parent_id', 'in', self._get_active_entities().ids),
             ('method', '=', 'full')
@@ -346,11 +355,11 @@ class ConsolPeriod(models.Model):
         for own in ownerships:
             journal = self.env['consol.journal'].create({
                 'period_id': self.id,
-                'name': f"E1: Investment vs Equity Elimination - {own.child_id.name}",
+                'name': f"E1: Eliminasi Investasi vs Ekuitas - {own.child_id.name}",
                 'code': 'E1',
                 'origin': 'auto',
                 'recurring': True,
-                'note': f"PSAK 65 par. B86(b) & PSAK 22: Elimination of {own.effective_percentage}% shareholding in {own.child_id.name}.",
+                'note': f"PSAK 65 par. B86(b) & PSAK 22: Eliminasi kepemilikan saham {own.effective_percentage}% pada {own.child_id.name}.",
             })
 
             lines = []
@@ -419,16 +428,16 @@ class ConsolPeriod(models.Model):
                     self.env['consol.journal.line'].create(lines)
 
     def _generate_e2_ic_balance(self):
-        """E2: Elimination of intercompany receivable/payable balances & E3: Elimination of intercompany transactions."""
-        # 1. E2 Journal: Receivable/Payable Balances (Balance Sheet)
+        """E2: Eliminasi saldo piutang/utang antar-perusahaan & E3: Eliminasi transaksi antar-perusahaan."""
+        # 1. Jurnal E2: Saldo Piutang/Utang (Neraca)
         bs_matches = self.match_ids.filtered(lambda m: m.status in ['matched', 'within_tolerance'] and m.account_a_id.statement == 'bs')
         if bs_matches:
             journal_bs = self.env['consol.journal'].create({
                 'period_id': self.id,
-                'name': "E2: Elimination of Intercompany Receivable/Payable Balances",
+                'name': "E2: Eliminasi Saldo Piutang / Utang Antar-Perusahaan",
                 'code': 'E2',
                 'origin': 'auto',
-                'note': "PSAK 65 par. B86(c): Elimination of intercompany receivable and payable balances.",
+                'note': "PSAK 65 par. B86(c): Eliminasi saldo piutang dan utang antar-perusahaan.",
             })
             lines_bs = []
             for m in bs_matches:
@@ -456,15 +465,15 @@ class ConsolPeriod(models.Model):
             if lines_bs:
                 self.env['consol.journal.line'].create(lines_bs)
 
-        # 2. E3 Journal: Intercompany Sales and COGS (Profit and Loss)
+        # 2. Jurnal E3: Penjualan dan HPP Antar-Perusahaan (Laba Rugi)
         pl_matches = self.match_ids.filtered(lambda m: m.status in ['matched', 'within_tolerance'] and m.account_a_id.statement == 'pl')
         if pl_matches:
             journal_pl = self.env['consol.journal'].create({
                 'period_id': self.id,
-                'name': "E3: Elimination of Intercompany Sales & Cost of Goods Sold",
+                'name': "E3: Eliminasi Penjualan & Beban Pokok Penjualan Antar-Perusahaan",
                 'code': 'E3',
                 'origin': 'auto',
-                'note': "PSAK 65 par. B86(c): Elimination of revenue and expenses from intercompany sales transactions.",
+                'note': "PSAK 65 par. B86(c): Eliminasi pendapatan dan beban dari transaksi penjualan antar-perusahaan.",
             })
             lines_pl = []
             for m in pl_matches:
@@ -493,7 +502,7 @@ class ConsolPeriod(models.Model):
                 self.env['consol.journal.line'].create(lines_pl)
 
     def _carry_forward_recurring_journals(self):
-        """Copy recurring journals from previous period."""
+        """Salin jurnal berulang dari periode sebelumnya."""
         prev_period = self.search([
             ('group_id', '=', self.group_id.id),
             ('date_to', '<', self.date_from),
@@ -508,11 +517,11 @@ class ConsolPeriod(models.Model):
             new_j = rj.copy({
                 'period_id': self.id,
                 'origin': 'auto',
-                'name': f"[Carry-Forward] {rj.name}",
+                'name': f"[Bawa ke Depan] {rj.name}",
             })
 
     def _reverse_previous_auto_reverse_journals(self):
-        """Reverse auto_reverse journals from previous period (e.g. E4 unrealised profit)."""
+        """Balik jurnal auto_reverse dari periode sebelumnya (misal: E4 laba belum terealisasi)."""
         prev_period = self.search([
             ('group_id', '=', self.group_id.id),
             ('date_to', '<', self.date_from),
@@ -526,11 +535,11 @@ class ConsolPeriod(models.Model):
         for rj in reversing_journals:
             rev_j = self.env['consol.journal'].create({
                 'period_id': self.id,
-                'name': f"[Reversal] {rj.name}",
+                'name': f"[Pembalikan] {rj.name}",
                 'code': rj.code,
                 'origin': 'auto',
                 'reversed_from_id': rj.id,
-                'note': f"Automatic reversal of period {prev_period.name} journal.",
+                'note': f"Pembalikan otomatis dari jurnal periode {prev_period.name}.",
             })
             for line in rj.line_ids:
                 self.env['consol.journal.line'].create({
@@ -548,9 +557,9 @@ class ConsolPeriod(models.Model):
     def action_compute_nci(self):
         self.ensure_one()
         if not self.group_id.nci_pl_account_id or not self.group_id.nci_equity_account_id:
-            raise UserError(_("NCI P&L Account and NCI Equity Account have not been configured on Consolidation Group!"))
+            raise UserError(_("Akun Laba Rugi NCI dan Akun Ekuitas NCI belum dikonfigurasikan pada Grup Konsolidasi!"))
 
-        # Delete old E7
+        # Hapus E7 lama
         self.journal_ids.filtered(lambda j: j.code == 'E7' and j.origin == 'auto').unlink()
 
         ownerships = self.env['consol.ownership'].search([
@@ -567,19 +576,19 @@ class ConsolPeriod(models.Model):
             if not child_tb:
                 continue
 
-            # Compute Subsidiary Net Income
+            # Hitung Laba Bersih Entitas Anak
             pl_lines = child_tb.line_ids.filtered(lambda l: l.statement == 'pl')
-            # Net Income = -(Sum balance income & expense)
+            # Laba Bersih = -(Jumlah saldo pendapatan & beban)
             net_income_fc = -sum(l.balance_rc for l in pl_lines)
             nci_income_share = net_income_fc * (nci_pct / 100.0)
 
             if abs(nci_income_share) > 0.01:
                 journal = self.env['consol.journal'].create({
                     'period_id': self.id,
-                    'name': f"E7: Attribution of Profit/Loss to NCI ({nci_pct:.2f}%) - {own.child_id.name}",
+                    'name': f"E7: Atribusi Laba Rugi ke NCI ({nci_pct:.2f}%) - {own.child_id.name}",
                     'code': 'E7',
                     'origin': 'auto',
-                    'note': f"PSAK 65 par. B94: Allocation of subsidiary profit/loss to Non-Controlling Interest ({nci_pct:.2f}%).",
+                    'note': f"PSAK 65 par. B94: Alokasi laba/rugi entitas anak kepada Kepentingan Non-Pengendali ({nci_pct:.2f}%).",
                 })
 
                 lines = []
@@ -617,31 +626,31 @@ class ConsolPeriod(models.Model):
                 self.env['consol.journal.line'].create(lines)
                 journal.action_post()
 
-        self.message_post(body=_("NCI attribution calculation (E7) completed."))
+        self.message_post(body=_("Perhitungan atribusi NCI (E7) selesai."))
 
     # ========================================================
     # 5. REVIEW & LOCK PERIOD
     # ========================================================
     def action_submit_review(self):
         self.ensure_one()
-        # Check elimination balance
+        # Periksa keseimbangan eliminasi
         posted_journals = self.journal_ids.filtered(lambda j: j.state == 'posted')
         tot_deb = sum(j.total_debit for j in posted_journals)
         tot_cred = sum(j.total_credit for j in posted_journals)
         if round(tot_deb, 2) != round(tot_cred, 2):
             raise UserError(_(
-                "Cannot submit review! Total Elimination Debit (%s) does not match Total Elimination Credit (%s)!",
+                "Tidak dapat mengajukan peninjauan! Total Debit Eliminasi (%s) tidak seimbang dengan Total Kredit Eliminasi (%s)!",
                 tot_deb, tot_cred
             ))
         self.state = 'review'
-        self.message_post(body=_("Consolidation period submitted for Review."))
+        self.message_post(body=_("Periode konsolidasi telah diajukan untuk Ditinjau (Review)."))
 
     def action_lock(self):
         self.ensure_one()
-        # Validate IC tolerance
+        # Validasi toleransi IC
         if self.unmatched_ic_count > 0:
             raise UserError(_(
-                "Period cannot be locked! There are %s intercompany differences exceeding tolerance that have not been approved (overridden).",
+                "Periode tidak dapat dikunci! Terdapat %s selisih antar-perusahaan melebihi batas toleransi yang belum disetujui (override).",
                 self.unmatched_ic_count
             ))
 
@@ -650,32 +659,32 @@ class ConsolPeriod(models.Model):
             'locked_by': self.env.user.id,
             'locked_date': fields.Datetime.now(),
         })
-        self.message_post(body=_("Consolidation period successfully LOCKED by %s.", self.env.user.name))
+        self.message_post(body=_("Periode konsolidasi berhasil DIKUNCI oleh %s.", self.env.user.name))
 
     def action_unlock(self):
         self.ensure_one()
         if not self.env.user.has_group('odoo_psak_consolidation.group_consolidation_manager'):
-            raise UserError(_("Only users with Consolidation Manager role can unlock a locked period!"))
+            raise UserError(_("Hanya pengguna dengan peran Manajer Konsolidasi yang dapat membuka kunci periode!"))
         self.write({
             'state': 'review',
             'locked_by': False,
             'locked_date': False,
         })
-        self.message_post(body=_("Consolidation period REOPENED by %s.", self.env.user.name))
+        self.message_post(body=_("Periode konsolidasi DIBUKA KEMBALI oleh %s.", self.env.user.name))
 
     def action_reset_draft(self):
         self.ensure_one()
         if self.state == 'locked':
-            raise UserError(_("Locked period cannot be reset! Please unlock first."))
+            raise UserError(_("Periode yang terkunci tidak dapat direset! Harap buka kunci terlebih dahulu."))
         self.state = 'draft'
-        self.message_post(body=_("Consolidation period reset back to Draft status."))
+        self.message_post(body=_("Periode konsolidasi direset kembali ke status Draf."))
 
     def action_view_reports(self):
         self.ensure_one()
         bs_report = self.env['consol.report'].search([('report_type', '=', 'balance_sheet')], limit=1)
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Consolidated Financial Reports'),
+            'name': _('Laporan Keuangan Konsolidasian'),
             'res_model': 'consol.report.export.wizard',
             'view_mode': 'form',
             'target': 'new',

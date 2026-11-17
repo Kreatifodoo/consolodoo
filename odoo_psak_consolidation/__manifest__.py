@@ -1,28 +1,29 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Financial Consolidation PSAK 65 (IFRS 10)',
-    'version': '19.0.1.0.0',
+    'name': 'Konsolidasi Laporan Keuangan PSAK 65 (IFRS 10)',
+    'version': '20.0.1.0.0',
     'category': 'Accounting/Accounting',
-    'summary': 'Multi-Entity Financial Consolidation Module based on PSAK 65 / IFRS 10',
+    'summary': 'Modul Konsolidasi Laporan Keuangan Multi-Entitas Berbasis PSAK 65 / IFRS 10',
     'description': """
-Odoo 19 Financial Consolidation Module — PSAK 65 / IFRS 10
-===========================================================
-Key Features:
-- Multi-level ownership structure (direct, step, cross-holding) with graph effective percentage computation.
-- Independent consolidation chart of accounts with unified mapping and unmapped account validation.
-- Automated trial balance extraction from account.move.line with CSV/XLSX import options.
-- Foreign currency translation engine (PSAK 10) with CTA recognition to OCI.
-- Intercompany balance & transaction reconciliation (Intercompany Matching).
-- Automated Elimination Journal Engine (E1–E10) & Recurring / Reversal journals.
-- Profit/Loss & OCI Attribution to Non-Controlling Interest (NCI) including deficit NCI handling.
-- No-Code Financial Reporting Engine:
-  * Statement of Financial Position (Balance Sheet)
-  * Statement of Profit or Loss & OCI
-  * Statement of Changes in Equity
-  * Statement of Cash Flows (Indirect Method)
-  * Consolidation Worksheet
-- Interactive OWL Web UI with drill-down, XLSX Excel Export & QWeb PDF printouts.
-- Role-based security access control & complete audit trail.
+Modul Konsolidasi Keuangan Odoo 20 — PSAK 65 / IFRS 10
+=======================================================
+Fitur Utama:
+
+* Struktur kepemilikan bertingkat (langsung, tidak langsung, silang) dengan perhitungan otomatis persentase efektif graf.
+* Bagan akun konsolidasi independen dengan pemetaan terpadu dan validasi akun yang belum terpetakan.
+* Penarikan otomatis neraca saldo dari transaksi buku besar (account.move.line) serta opsi impor CSV/Excel.
+* Mesin penjabaran valuta asing (PSAK 10) dengan pengakuan selisih kurs translasi (CTA) ke Penghasilan Komprehensif Lain (OCI).
+* Rekonsiliasi transaksi & saldo antar-perusahaan (Intercompany Matching).
+* Mesin Jurnal Eliminasi Otomatis (E1–E10) serta jurnal berulang (recurring) dan pembalikan otomatis (reversal).
+* Atribusi Laba/Rugi & OCI kepada Kepentingan Non-Pengendali (NCI) termasuk penanganan NCI defisit.
+* Mesin Laporan Keuangan Tanpa Kode (No-Code Reporting Engine):
+  - Laporan Posisi Keuangan (Neraca)
+  - Laporan Laba Rugi & OCI
+  - Laporan Perubahan Ekuitas
+  - Laporan Arus Kas (Metode Tidak Langsung)
+  - Kertas Kerja Konsolidasi (Worksheet)
+* Tampilan Web Interaktif OWL dengan penelusuran rincian (drill-down), ekspor Excel (.xlsx), dan cetak dokumen resmi PDF.
+* Kontrol hak akses berbasis peran & jejak audit lengkap.
     """,
     'author': 'Arkana Solusi Digital',
     'website': 'https://arkanaditama.com',
@@ -30,7 +31,7 @@ Key Features:
     'depends': ['base', 'account', 'mail', 'web'],
     'data': [
         'security/consolidation_security.xml',
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/account_type_data.xml',
         'data/elimination_rule_data.xml',
         'data/report_template_data.xml',

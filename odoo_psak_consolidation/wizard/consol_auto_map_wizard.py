@@ -4,18 +4,20 @@ from odoo.exceptions import UserError
 
 class ConsolAutoMapWizard(models.TransientModel):
     _name = 'consol.auto.map.wizard'
-    _description = 'Chart of Accounts Auto-Map Wizard'
+    _description = 'Wisard Pemetaan Otomatis Bagan Akun'
 
     entity_ids = fields.Many2many(
         'consol.entity',
-        string='Select Entities',
+        string='Pilih Entitas',
         required=True,
-        domain="[('source_type', '=', 'odoo')]")
+        domain="[('source_type', '=', 'odoo')]",
+        help="Pilih satu atau lebih entitas yang ingin dipetakan akunnya secara otomatis.")
 
     match_strategy = fields.Selection([
-        ('exact_code', 'Exact Code Match'),
-        ('prefix_code', 'Code Prefix Match'),
-    ], string='Matching Method', default='prefix_code', required=True)
+        ('exact_code', 'Kesesuaian Kode Akun Persis'),
+        ('prefix_code', 'Kesesuaian Awalan Kode Akun'),
+    ], string='Metode Pencocokan Akun', default='prefix_code', required=True,
+       help="Metode yang digunakan untuk mencocokkan kode akun lokal dengan kode akun konsolidasi.")
 
     def action_execute_auto_map(self):
         self.ensure_one()
@@ -31,8 +33,8 @@ class ConsolAutoMapWizard(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Auto-Map Succeeded'),
-                'message': _('Successfully mapped %s accounts automatically.', total_mapped),
+                'title': _('Pemetaan Otomatis Berhasil'),
+                'message': _('Berhasil memetakan %s akun secara otomatis.', total_mapped),
                 'sticky': False,
                 'next': {'type': 'ir.actions.act_window_close'},
             }

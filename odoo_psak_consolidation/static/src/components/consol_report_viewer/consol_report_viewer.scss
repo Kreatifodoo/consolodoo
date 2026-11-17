@@ -2,101 +2,343 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #f8f9fa;
-    padding: 16px;
+    background-color: #f3f4f6;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1f2937;
+    overflow: hidden;
 
-    .o_report_header_bar {
-        background: #ffffff;
-        padding: 14px 20px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    /* Top Control Bar - Odoo Accounting Default Style */
+    .o_report_control_panel {
+        background-color: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 8px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        z-index: 10;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 
-        .o_report_title {
-            h3 {
-                margin: 0;
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #1f4e79;
+        .o_cp_left {
+            .o_btn_pdf {
+                background-color: #714b67 !important;
+                border-color: #714b67 !important;
+                color: #ffffff !important;
+                font-weight: 600;
+                font-size: 13px;
+                padding: 5px 14px;
+                border-radius: 4px;
+                transition: background-color 0.15s ease-in-out;
+
+                &:hover {
+                    background-color: #5c3c54 !important;
+                    border-color: #5c3c54 !important;
+                }
             }
-            .o_report_subtitle {
-                color: #6c757d;
-                font-size: 0.85rem;
-                margin-top: 4px;
+
+            .o_btn_xlsx {
+                background-color: #ffffff !important;
+                border: 1px solid #d1d5db !important;
+                color: #374151 !important;
+                font-weight: 600;
+                font-size: 13px;
+                padding: 5px 14px;
+                border-radius: 4px;
+                transition: all 0.15s ease-in-out;
+
+                &:hover {
+                    background-color: #f3f4f6 !important;
+                    border-color: #9ca3af !important;
+                }
+            }
+
+            .o_report_title_btn {
+                text-decoration: none;
+                color: #111827;
+                padding: 4px 8px;
+                border-radius: 4px;
+
+                h4 {
+                    font-size: 1.15rem;
+                    letter-spacing: -0.01em;
+                }
+
+                &:hover {
+                    background-color: #f3f4f6;
+                    color: #000000;
+                }
             }
         }
 
-        .o_report_actions {
-            display: flex;
-            gap: 10px;
+        .o_cp_right {
+            .o_filter_btn {
+                background-color: #ffffff;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
+                padding: 5px 12px;
+                font-size: 13px;
+                color: #374151;
+                font-weight: 500;
+                transition: all 0.15s ease-in-out;
+
+                &:hover {
+                    background-color: #f9fafb;
+                    border-color: #9ca3af;
+                }
+
+                &:focus, &.show {
+                    border-color: #714b67;
+                    box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.2);
+                }
+            }
         }
     }
 
-    .o_report_table_container {
+    /* Sub-Banner Persis seperti "There are unposted entries included in this period" */
+    .o_report_sub_banner {
+        background-color: #e0f2fe;
+        border-bottom: 1px solid #bae6fd;
+        color: #0369a1;
+        padding: 9px 24px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        strong {
+            color: #0c4a6e;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+        }
+    }
+
+    /* Scrollable Container untuk Lembar Kerja */
+    .o_report_sheet_container {
         flex: 1;
-        overflow: auto;
-        background: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        padding: 12px;
+        overflow-y: auto;
+        overflow-x: auto;
+        padding: 24px 20px 60px 20px;
 
-        table.o_consol_table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
+        /* Lembar Kertas Putih (Financial Sheet) */
+        .o_financial_sheet {
+            max-width: 1320px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 36px 48px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            min-height: 600px;
 
-            thead th {
-                position: sticky;
-                top: 0;
-                background-color: #1f4e79;
-                color: #ffffff;
-                padding: 10px 12px;
-                font-weight: 600;
-                text-align: right;
-                z-index: 2;
-                border: 1px solid #163a5c;
+            .o_sheet_company_names {
+                color: #9ca3af;
+                font-size: 13.5px;
+                margin-bottom: 24px;
+                letter-spacing: 0.2px;
+            }
 
-                &:first-child, &:nth-child(2) {
-                    text-align: left;
+            .o_financial_table {
+                width: 100%;
+                margin-bottom: 0;
+                border-collapse: separate;
+                border-spacing: 0;
+
+                thead {
+                    tr.o_table_header_row {
+                        th {
+                            background-color: #ffffff;
+                            border-top: none;
+                            border-bottom: 2px solid #111827;
+                            padding: 10px 14px;
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: #111827;
+                            text-transform: none;
+
+                            &.o_th_name {
+                                text-align: left;
+                            }
+                        }
+                    }
                 }
-            }
 
-            tbody td {
-                padding: 8px 12px;
-                border: 1px solid #e9ecef;
-                text-align: right;
+                tbody {
+                    tr {
+                        transition: background-color 0.1s ease-in-out;
 
-                &:first-child, &:nth-child(2) {
-                    text-align: left;
-                }
-            }
+                        td {
+                            border-top: 1px solid #f3f4f6;
+                            border-bottom: none;
+                            padding: 7px 14px;
+                            font-size: 13px;
+                            color: #374151;
+                            vertical-align: middle;
 
-            tr.o_line_bold {
-                font-weight: bold;
-                background-color: #fbfcfd;
-            }
+                            &.o_td_name {
+                                color: #111827;
+                            }
 
-            tr.o_line_header {
-                font-weight: 700;
-                color: #1f4e79;
-                background-color: #f1f5f9;
-            }
+                            &.o_td_value {
+                                font-variant-numeric: tabular-nums;
+                                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                            }
+                        }
 
-            tr.o_line_underline td {
-                border-bottom: 2px solid #333333;
-            }
+                        &:hover td {
+                            background-color: #f9fafb;
+                        }
 
-            .o_drilldown_cell {
-                cursor: pointer;
-                color: #0d6efd;
-                &:hover {
-                    text-decoration: underline;
+                        /* Header Group Lines (seperti Revenue, Less Costs of Revenue) */
+                        &.o_line_header td {
+                            font-weight: 600;
+                            color: #111827;
+                            padding-top: 14px;
+                            padding-bottom: 6px;
+                            border-top: none;
+                            cursor: pointer;
+
+                            &:hover {
+                                background-color: #f3f4f6;
+                            }
+                        }
+
+                        /* Bold Summary Lines (seperti Gross Profit, Net Profit) */
+                        &.o_line_bold td {
+                            font-weight: 700;
+                            background-color: #f3f4f6;
+                            color: #111827;
+                            border-top: 1px solid #d1d5db;
+                            border-bottom: 1px solid #d1d5db;
+                        }
+
+                        /* Total Double Underline */
+                        &.o_line_underline td {
+                            font-weight: 800;
+                            border-bottom: 3px double #111827 !important;
+                        }
+
+                        /* Caret & Title cursor */
+                        .o_caret_icon {
+                            cursor: pointer;
+                            font-size: 11px;
+                            display: inline-block;
+                            width: 14px;
+                            text-align: center;
+                            transition: transform 0.15s ease-in-out, color 0.15s ease-in-out;
+
+                            &:hover {
+                                color: #111827 !important;
+                            }
+                        }
+
+                        .o_account_line_title {
+                            cursor: pointer;
+                            &:hover {
+                                color: #0d6efd;
+                            }
+                        }
+
+                        /* Drilldown Cell & Info Icon */
+                        .o_drilldown_cell {
+                            cursor: pointer;
+
+                            &:hover .o_value_text {
+                                color: #0d6efd;
+                                text-decoration: underline;
+                            }
+                        }
+
+                        .o_info_icon {
+                            color: #9ca3af;
+                            font-size: 12px;
+                            cursor: pointer;
+                            opacity: 0.8;
+                            transition: opacity 0.2s;
+
+                            &:hover {
+                                color: #374151;
+                                opacity: 1;
+                            }
+                        }
+                    }
+
+                    /* Sub-Baris Detail Akun Konsolidasi (Unfolded Account Details) */
+                    tr.o_line_sub_account {
+                        background-color: #fafbfc;
+                        transition: background-color 0.1s ease-in-out;
+
+                        td {
+                            padding-top: 5px;
+                            padding-bottom: 5px;
+                            font-size: 12.5px;
+                            border-top: 1px dashed #e5e7eb;
+
+                            &.o_td_sub_name {
+                                cursor: pointer;
+                                user-select: none;
+
+                                .o_sub_caret_icon {
+                                    font-size: 10px;
+                                    width: 12px;
+                                }
+
+                                .badge {
+                                    font-weight: 500;
+                                    font-size: 11px;
+                                    padding: 2px 6px;
+                                    background-color: #e5e7eb !important;
+                                    color: #374151 !important;
+                                }
+
+                                .o_acc_name {
+                                    font-weight: 500;
+                                }
+
+                                &:hover .o_acc_name {
+                                    color: #0d6efd !important;
+                                }
+                            }
+
+                            &.o_td_sub_value {
+                                font-variant-numeric: tabular-nums;
+                            }
+                        }
+
+                        &:hover td {
+                            background-color: #f1f5f9;
+                        }
+                    }
+
+                    /* Sub-Baris Rincian Akun Sumber per Entitas */
+                    tr.o_line_source_detail {
+                        background-color: #f8fafc;
+
+                        td {
+                            padding-top: 4px;
+                            padding-bottom: 4px;
+                            font-size: 11.5px;
+                            border-top: 1px dotted #e2e8f0;
+
+                            &.o_td_source_name {
+                                color: #4b5563;
+                            }
+
+                            &.o_td_source_value {
+                                font-variant-numeric: tabular-nums;
+                            }
+                        }
+
+                        &:hover td {
+                            background-color: #eef2f6;
+                        }
+                    }
                 }
             }
         }
     }
 }
+

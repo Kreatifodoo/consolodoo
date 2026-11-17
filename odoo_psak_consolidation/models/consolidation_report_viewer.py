@@ -3,12 +3,12 @@ import re
 
 class ConsolidationReportViewer(models.TransientModel):
     _name = 'consolidation.report.viewer'
-    _description = 'Consolidation Report Viewer'
+    _description = 'Penampil Laporan Konsolidasi'
 
-    report_id = fields.Many2one('consolidation.report', string='Report', required=True)
-    period_ids = fields.Many2many('consolidation.period', string='Periods')
-    date_from = fields.Date(string='Date From')
-    date_to = fields.Date(string='Date To')
+    report_id = fields.Many2one('consolidation.report', string='Laporan Keuangan', required=True, help="Pilih template laporan keuangan konsolidasi yang ingin ditampilkan.")
+    period_ids = fields.Many2many('consolidation.period', string='Periode Konsolidasi', help="Pilih satu atau beberapa periode konsolidasi.")
+    date_from = fields.Date(string='Dari Tanggal', help="Batas tanggal awal penarikan laporan.")
+    date_to = fields.Date(string='Sampai Tanggal', help="Batas tanggal akhir penarikan laporan.")
 
     def action_view_report(self):
         """

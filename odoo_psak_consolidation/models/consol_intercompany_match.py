@@ -3,71 +3,71 @@ from odoo import models, fields, api, _
 
 class ConsolIntercompanyMatch(models.Model):
     _name = 'consol.intercompany.match'
-    _description = 'Intercompany Matching & Reconciliation'
+    _description = 'Pencocokan & Rekonsiliasi Antar-Perusahaan'
     _order = 'period_id, status desc, difference desc'
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
+        string='Periode Konsolidasi',
         required=True,
         ondelete='cascade')
 
     entity_a_id = fields.Many2one(
         'consol.entity',
-        string='Entity A',
+        string='Entitas A',
         required=True)
 
     entity_b_id = fields.Many2one(
         'consol.entity',
-        string='Entity B (Counterparty)',
+        string='Entitas B (Lawan Transaksi)',
         required=True)
 
     account_a_id = fields.Many2one(
         'consol.account',
-        string='Entity A Account',
+        string='Akun Entitas A',
         required=True)
 
     account_b_id = fields.Many2one(
         'consol.account',
-        string='Entity B Counterpart Account',
+        string='Akun Lawan Entitas B',
         required=True)
 
     currency_id = fields.Many2one(
         'res.currency',
-        string='Reporting Currency',
+        string='Mata Uang Pelaporan',
         related='period_id.currency_id')
 
     amount_a = fields.Monetary(
-        string='Entity A Balance (RC)',
+        string='Saldo Entitas A (RC)',
         currency_field='currency_id',
         default=0.0)
 
     amount_b = fields.Monetary(
-        string='Entity B Balance (RC)',
+        string='Saldo Entitas B (RC)',
         currency_field='currency_id',
         default=0.0)
 
     difference = fields.Monetary(
-        string='Discrepancy (RC)',
+        string='Selisih Nilai (RC)',
         currency_field='currency_id',
         compute='_compute_difference',
         store=True)
 
     status = fields.Selection([
-        ('matched', 'Matched (Zero Difference)'),
-        ('within_tolerance', 'Within Tolerance'),
-        ('unmatched', 'Out of Tolerance')
-    ], string='Reconciliation Status', compute='_compute_status', store=True)
+        ('matched', 'Cocok (Nol Selisih)'),
+        ('within_tolerance', 'Dalam Batas Toleransi'),
+        ('unmatched', 'Di Luar Batas Toleransi')
+    ], string='Status Rekonsiliasi', compute='_compute_status', store=True)
 
     is_overridden = fields.Boolean(
-        string='Manually Overridden',
+        string='Disetujui Manual (Override)',
         default=False,
-        help="Authorized user approves discrepancy so period workflow can proceed/lock.")
+        help="Pengguna yang berwenang menyetujui selisih agar alur kerja penguncian periode dapat dilanjutkan.")
 
-    override_reason = fields.Text(string='Override Reason / Discrepancy Note')
-    overridden_by = fields.Many2one('res.users', string='Overridden By')
+    override_reason = fields.Text(string='Alasan Persetujuan / Catatan Selisih')
+    overridden_by = fields.Many2one('res.users', string='Disetujui Oleh')
 
-    note = fields.Char(string='Additional Notes')
+    note = fields.Char(string='Catatan Tambahan')
 
     @api.depends('amount_a', 'amount_b')
     def _compute_difference(self):

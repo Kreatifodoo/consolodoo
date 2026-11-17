@@ -2,7 +2,7 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, proxy, onWillStart } from "@odoo/owl";
 
 export class XbrlReportViewer extends Component {
     setup() {
@@ -12,7 +12,7 @@ export class XbrlReportViewer extends Component {
         const today = new Date();
         const startOfYear = new Date(today.getFullYear(), 0, 1);
         
-        this.state = useState({
+        this.state = proxy({
             dateFrom: startOfYear.toISOString().split('T')[0],
             dateTo: today.toISOString().split('T')[0],
             unfoldedLines: [],

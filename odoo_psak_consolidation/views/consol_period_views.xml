@@ -4,7 +4,7 @@
         <field name="name">consol.period.tree</field>
         <field name="model">consol.period</field>
         <field name="arch" type="xml">
-            <list string="Consolidation Periods" decoration-success="state == 'locked'" decoration-info="state == 'draft'" decoration-warning="state == 'review'">
+            <list string="Periode Konsolidasi" decoration-success="state == 'locked'" decoration-info="state == 'draft'" decoration-warning="state == 'review'">
                 <field name="name"/>
                 <field name="group_id"/>
                 <field name="date_from"/>
@@ -20,44 +20,45 @@
         <field name="name">consol.period.form</field>
         <field name="model">consol.period</field>
         <field name="arch" type="xml">
-            <form string="Consolidation Period">
+            <form string="Periode Konsolidasi">
                 <header>
-                    <!-- PSAK 65 Consolidation Workflow -->
-                    <button name="action_load_trial_balances" string="1. Load Trial Balances" type="object" class="oe_highlight" invisible="state not in ['draft', 'data_loaded']"/>
-                    <button name="action_run_ic_matching" string="2. Run IC Matching" type="object" class="btn-info" invisible="state not in ['data_loaded', 'eliminated']"/>
-                    <button name="action_generate_eliminations" string="3. Generate Eliminations" type="object" class="oe_highlight" invisible="state not in ['data_loaded', 'eliminated']"/>
-                    <button name="action_compute_nci" string="4. Compute NCI (E7)" type="object" class="btn-primary" invisible="state not in ['eliminated']"/>
-                    <button name="action_submit_review" string="5. Submit for Review" type="object" class="btn-warning" invisible="state not in ['eliminated']"/>
-                    <button name="action_lock" string="6. Lock Period" type="object" class="btn-danger" invisible="state not in ['review']"/>
-                    <button name="action_unlock" string="Unlock Period" type="object" invisible="state != 'locked'" groups="odoo_psak_consolidation.group_consolidation_manager"/>
-                    <button name="action_view_reports" string="Financial Reports" type="object" class="btn-success" invisible="state in ['draft']"/>
-                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state in ['draft', 'locked']"/>
+                    <!-- Alur Kerja Konsolidasi PSAK 65 -->
+                    <button name="action_load_trial_balances" string="1. Tarik Neraca Saldo" type="object" class="oe_highlight" invisible="state not in ['draft', 'data_loaded']"/>
+                    <button name="action_run_ic_matching" string="2. Cocokkan Transaksi Intragrup" type="object" class="btn-info" invisible="state not in ['data_loaded', 'eliminated']"/>
+                    <button name="action_generate_eliminations" string="3. Buat Jurnal Eliminasi" type="object" class="oe_highlight" invisible="state not in ['data_loaded', 'eliminated']"/>
+                    <button name="action_compute_nci" string="4. Hitung Bagian NCI (E7)" type="object" class="btn-primary" invisible="state not in ['eliminated']"/>
+                    <button name="action_submit_review" string="5. Ajukan Peninjauan" type="object" class="btn-warning" invisible="state not in ['eliminated']"/>
+                    <button name="action_lock" string="6. Kunci Periode" type="object" class="btn-danger" invisible="state not in ['review']"/>
+                    <button name="action_unlock" string="Buka Kunci Periode" type="object" invisible="state != 'locked'" groups="odoo_psak_consolidation.group_consolidation_manager"/>
+                    <button name="action_view_reports" string="Lihat Laporan Keuangan" type="object" class="btn-success" invisible="state in ['draft']"/>
+                    <button name="action_reset_draft" string="Kembalikan ke Draf" type="object" invisible="state in ['draft', 'locked']"/>
                     
                     <field name="state" widget="statusbar" statusbar_visible="draft,data_loaded,eliminated,review,locked"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_reports" type="object" class="oe_stat_button" icon="fa-bar-chart" invisible="state in ['draft']">
+                        <button name="action_view_reports" type="object" class="oe_stat_button" icon="bar_chart" invisible="state in ['draft']">
                             <div class="o_stat_info">
-                                <span class="o_stat_text">Financial</span>
-                                <span class="o_stat_text">Reports</span>
+                                <span class="o_stat_text">Laporan</span>
+                                <span class="o_stat_text">Keuangan</span>
                             </div>
                         </button>
                     </div>
                     <div class="oe_title">
-                        <label for="name" string="Period Name"/>
+                        <label for="name" string="Nama Periode"/>
                         <h1>
-                            <field name="name" placeholder="e.g. 2026-09" readonly="state == 'locked'"/>
+                            <field name="name" placeholder="Contoh: 2026-09" readonly="state == 'locked'"/>
                         </h1>
                     </div>
                     <group>
-                        <group string="Period Configuration">
+                        <group string="Informasi &amp; Tanggal Periode">
                             <field name="group_id" readonly="state != 'draft'"/>
                             <field name="currency_id"/>
                             <field name="date_from" readonly="state == 'locked'"/>
                             <field name="date_to" readonly="state == 'locked'"/>
+                            <field name="ledger_journal_group_id" readonly="state not in ['draft']" placeholder="Local GAAP (PSAK)"/>
                         </group>
-                        <group string="Lock Status &amp; Audit">
+                        <group string="Status Penguncian &amp; Jejak Audit">
                             <field name="ic_difference_total"/>
                             <field name="unmatched_ic_count" invisible="unmatched_ic_count == 0"/>
                             <field name="locked_by" invisible="not locked_by"/>
@@ -65,7 +66,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Entity Trial Balances">
+                        <page string="Neraca Saldo Entitas">
                             <field name="trial_balance_ids" readonly="state == 'locked'">
                                 <list>
                                     <field name="entity_id"/>
@@ -76,7 +77,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Intercompany Reconciliation (IC Matching)">
+                        <page string="Rekonsiliasi Antar-Perusahaan (IC Matching)">
                             <field name="match_ids" readonly="state == 'locked'">
                                 <list decoration-success="status == 'matched'" decoration-warning="status == 'within_tolerance'" decoration-danger="status == 'unmatched' and not is_overridden">
                                     <field name="entity_a_id"/>
@@ -91,7 +92,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Elimination Journals">
+                        <page string="Jurnal Eliminasi">
                             <field name="journal_ids" readonly="state == 'locked'">
                                 <list decoration-muted="state == 'draft'">
                                     <field name="code"/>
@@ -105,7 +106,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Translation Rates (PSAK 10)">
+                        <page string="Kurs Valuta Asing (PSAK 10)">
                             <field name="rate_ids" readonly="state == 'locked'">
                                 <list editable="bottom">
                                     <field name="currency_id"/>
@@ -124,12 +125,12 @@
     </record>
 
     <record id="action_consol_period" model="ir.actions.act_window">
-        <field name="name">Consolidation Periods</field>
+        <field name="name">Periode Konsolidasi</field>
         <field name="res_model">consol.period</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create a new monthly or annual financial consolidation period!
+                Buat periode konsolidasi keuangan bulanan atau tahunan baru!
             </p>
         </field>
     </record>

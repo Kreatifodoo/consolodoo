@@ -4,22 +4,22 @@
         <field name="name">consol.report.export.wizard.form</field>
         <field name="model">consol.report.export.wizard</field>
         <field name="arch" type="xml">
-            <form string="Print &amp; Export Consolidated Financial Reports">
+            <form string="Cetak &amp; Ekspor Laporan Keuangan Konsolidasian">
                 <group>
                     <field name="period_id"/>
                     <field name="report_id"/>
                     <field name="export_format" widget="radio"/>
                 </group>
                 <footer>
-                    <button name="action_generate_export" string="Generate Report" type="object" class="oe_highlight"/>
-                    <button string="Close" class="btn-secondary" special="cancel"/>
+                    <button name="action_generate_export" string="Tampilkan / Ekspor Laporan" type="object" class="oe_highlight"/>
+                    <button string="Tutup" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_consol_report_export_wizard" model="ir.actions.act_window">
-        <field name="name">Consolidated Financial Reports</field>
+        <field name="name">Laporan Keuangan Konsolidasian</field>
         <field name="res_model">consol.report.export.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

@@ -2,128 +2,159 @@
 <odoo>
     <!-- Root Menu -->
     <menuitem id="menu_consolidation_root"
-              name="Consolidation"
+              name="Konsolidasi"
               web_icon="odoo_psak_consolidation,static/description/icon.png"
               sequence="45"
               groups="group_consolidation_auditor"/>
 
     <!-- ========================================== -->
-    <!-- 1. OPERATIONS SUBMENU                      -->
+    <!-- 1. OPERASIONAL SUBMENU                     -->
     <!-- ========================================== -->
     <menuitem id="menu_consolidation_process"
-              name="Operations"
+              name="Operasional"
               parent="menu_consolidation_root"
               sequence="10"/>
 
     <menuitem id="menu_consol_period"
-              name="Consolidation Periods"
+              name="Periode Konsolidasi"
               parent="menu_consolidation_process"
               action="action_consol_period"
               sequence="10"/>
 
     <menuitem id="menu_consol_trial_balance"
-              name="Entity Trial Balances"
+              name="Neraca Saldo Entitas"
               parent="menu_consolidation_process"
               action="action_consol_trial_balance"
               sequence="20"/>
 
     <menuitem id="menu_consol_ic_match"
-              name="Intercompany Matching"
+              name="Pencocokan Antar-Perusahaan"
               parent="menu_consolidation_process"
               action="action_consol_ic_match"
               sequence="30"/>
 
     <menuitem id="menu_consol_journal"
-              name="Elimination Journals"
+              name="Jurnal Eliminasi"
               parent="menu_consolidation_process"
               action="action_consol_journal"
               sequence="40"/>
 
     <!-- ========================================== -->
-    <!-- 2. REPORTING SUBMENU                       -->
+    <!-- 2. LAPORAN KEUANGAN SUBMENU                -->
     <!-- ========================================== -->
     <menuitem id="menu_consolidation_reports"
-              name="Reporting"
+              name="Laporan Keuangan"
               parent="menu_consolidation_root"
               sequence="20"/>
 
-    <menuitem id="menu_consol_report_export"
-              name="Consolidated Financial Reports"
+    <menuitem id="menu_consol_report_balance_sheet"
+              name="Laporan Posisi Keuangan (Neraca)"
               parent="menu_consolidation_reports"
-              action="action_consol_report_export_wizard"
+              action="action_consol_report_balance_sheet"
               sequence="10"/>
 
-    <menuitem id="menu_consol_nci_analysis"
-              name="Ownership &amp; NCI Analysis"
+    <menuitem id="menu_consol_report_profit_loss"
+              name="Laporan Laba Rugi &amp; OCI"
               parent="menu_consolidation_reports"
-              action="action_consol_ownership"
+              action="action_consol_report_profit_loss"
               sequence="20"/>
 
+    <menuitem id="menu_consol_report_cash_flow"
+              name="Laporan Arus Kas"
+              parent="menu_consolidation_reports"
+              action="action_consol_report_cash_flow"
+              sequence="30"/>
+
+    <menuitem id="menu_consol_report_equity"
+              name="Laporan Perubahan Ekuitas"
+              parent="menu_consolidation_reports"
+              action="action_consol_report_equity"
+              sequence="40"/>
+
+    <menuitem id="menu_consol_report_worksheet"
+              name="Kertas Kerja Konsolidasi"
+              parent="menu_consolidation_reports"
+              action="action_consol_report_worksheet"
+              sequence="50"/>
+
+    <menuitem id="menu_consol_nci_analysis"
+              name="Analisis Kepemilikan &amp; NCI"
+              parent="menu_consolidation_reports"
+              action="action_consol_ownership"
+              sequence="60"/>
+
+    <menuitem id="menu_consol_report_templates"
+              name="Konfigurasi Template Laporan"
+              parent="menu_consolidation_reports"
+              action="action_consol_report"
+              sequence="70"
+              groups="group_consolidation_manager"/>
+
     <!-- ========================================== -->
-    <!-- 3. CONFIGURATION SUBMENU                   -->
+    <!-- 3. PENGATURAN SUBMENU                      -->
     <!-- ========================================== -->
     <menuitem id="menu_consolidation_config"
-              name="Configuration"
+              name="Pengaturan"
               parent="menu_consolidation_root"
               sequence="30"
               groups="group_consolidation_manager"/>
 
     <menuitem id="menu_consol_group"
-              name="Consolidation Groups"
+              name="Grup Konsolidasi"
               parent="menu_consolidation_config"
               action="action_consol_group"
               sequence="10"/>
 
     <menuitem id="menu_consol_entity"
-              name="Consolidation Entities"
+              name="Entitas Konsolidasi"
               parent="menu_consolidation_config"
               action="action_consol_entity"
               sequence="20"/>
 
     <menuitem id="menu_consol_ownership"
-              name="Ownership Structure"
+              name="Struktur Kepemilikan"
               parent="menu_consolidation_config"
               action="action_consol_ownership"
               sequence="25"/>
 
     <menuitem id="menu_consol_account"
-              name="Chart of Accounts (COA)"
+              name="Bagan Akun Konsolidasi (COA)"
               parent="menu_consolidation_config"
               action="action_consol_account"
               sequence="30"/>
 
     <menuitem id="menu_consol_import_company_coa_wizard"
-              name="Import Master CoA from Company"
+              name="Salin Master Akun dari Perusahaan"
               parent="menu_consolidation_config"
               action="action_consol_import_company_coa_wizard"
               sequence="35"/>
 
     <menuitem id="menu_consol_account_mapping"
-              name="Entity Account Mappings"
+              name="Pemetaan Akun Entitas"
               parent="menu_consolidation_config"
               action="action_consol_account_mapping"
               sequence="40"/>
 
     <menuitem id="menu_consol_auto_map_wizard"
-              name="Auto-Map Entity Accounts"
+              name="Pemetaan Akun Otomatis"
               parent="menu_consolidation_config"
               action="action_consol_auto_map_wizard"
               sequence="45"/>
 
     <menuitem id="menu_consol_rate"
-              name="Consolidation Exchange Rates"
+              name="Kurs Valuta Asing (PSAK 10)"
               parent="menu_consolidation_config"
               action="action_consol_rate"
               sequence="50"/>
 
     <menuitem id="menu_consol_elim_rule"
-              name="Elimination Rules"
+              name="Aturan Eliminasi (PSAK 65)"
               parent="menu_consolidation_config"
               action="action_consol_elimination_rule"
               sequence="60"/>
 
     <menuitem id="menu_consol_report_template"
-              name="Report Templates"
+              name="Template Laporan Keuangan"
               parent="menu_consolidation_config"
               action="action_consol_report"
               sequence="70"/>

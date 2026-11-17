@@ -10,27 +10,27 @@
                         
                         <div class="input-group w-auto">
                             <span class="input-group-text">Template</span>
-                            <select class="form-select" t-model="state.selectedReportId">
-                                <t t-foreach="state.availableReports" t-as="report" t-key="report.id">
-                                    <option t-att-value="report.id"><t t-esc="report.name"/></option>
+                            <select class="form-select" t-att-value="this.state.selectedReportId" t-on-input="(ev) => this.state.selectedReportId = ev.target.value">
+                                <t t-foreach="this.state.availableReports" t-as="report" t-key="report.id">
+                                    <option t-att-value="report.id"><t t-out="report.name"/></option>
                                 </t>
                             </select>
                         </div>
 
                         <div class="input-group w-auto">
                             <span class="input-group-text">From</span>
-                            <input type="date" class="form-control" t-model="state.dateFrom"/>
+                            <input type="date" class="form-control" t-att-value="this.state.dateFrom" t-on-input="(ev) => this.state.dateFrom = ev.target.value"/>
                         </div>
                         <div class="input-group w-auto">
                             <span class="input-group-text">To</span>
-                            <input type="date" class="form-control" t-model="state.dateTo"/>
+                            <input type="date" class="form-control" t-att-value="this.state.dateTo" t-on-input="(ev) => this.state.dateTo = ev.target.value"/>
                         </div>
                         
-                        <button class="btn btn-primary" t-on-click="loadData">Apply</button>
+                        <button class="btn btn-primary" t-on-click="this.loadData">Apply</button>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-secondary" t-on-click="exportExcel"><i class="fa fa-file-excel-o"/> Excel</button>
-                        <button class="btn btn-outline-secondary" t-on-click="exportPdf"><i class="fa fa-file-pdf-o"/> PDF</button>
+                        <button class="btn btn-outline-secondary" t-on-click="this.exportExcel"><i class="fa fa-file-excel-o"/> Excel</button>
+                        <button class="btn btn-outline-secondary" t-on-click="this.exportPdf"><i class="fa fa-file-pdf-o"/> PDF</button>
                     </div>
                 </div>
 
@@ -44,31 +44,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <t t-if="!state.selectedReportId">
+                            <t t-if="!this.state.selectedReportId">
                                 <tr><td colspan="2" class="text-center text-muted p-5">Please select a Report Template.</td></tr>
                             </t>
-                            <t t-elif="state.reportData.length == 0">
+                            <t t-elif="this.state.reportData.length == 0">
                                 <tr><td colspan="2" class="text-center text-muted p-5">No data available or click Apply to load.</td></tr>
                             </t>
-                            <t t-foreach="state.reportData" t-as="line" t-key="line.id">
-                                <tr t-att-class="getLineClass(line)">
+                            <t t-foreach="this.state.reportData" t-as="line" t-key="line.id">
+                                <tr t-att-class="this.getLineClass(line)">
                                     <td t-attf-style="padding-left: {{ line.indent * 20 + 10 }}px;" class="position-relative">
                                         <t t-if="line.has_children">
                                             <i t-attf-class="fa fa-caret-{{ line.is_unfolded ? 'down' : 'right' }} me-2 cursor-pointer text-muted"
                                                t-on-click="() => this.toggleFold(line)"/>
                                         </t>
                                         <span t-att-title="line.code ? 'Code: ' + line.code : ''">
-                                            <t t-esc="line.name"/>
+                                            <t t-out="line.name"/>
                                         </span>
                                     </td>
                                     <td class="text-end">
                                         <t t-if="line.type === 'coa_line'">
                                             <a href="#" t-on-click.prevent="() => this.drillDown(line)" class="text-decoration-none">
-                                                <t t-esc="formatCurrency(line.balance)"/>
+                                                <t t-out="this.formatCurrency(line.balance)"/>
                                             </a>
                                         </t>
                                         <span t-else="">
-                                            <t t-esc="formatCurrency(line.balance)"/>
+                                            <t t-out="this.formatCurrency(line.balance)"/>
                                         </span>
                                     </td>
                                 </tr>

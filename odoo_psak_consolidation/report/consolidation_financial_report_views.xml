@@ -7,7 +7,6 @@
         <field name="model">consolidation.report.viewer</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">odoo_psak_consolidation.report_financial_pdf</field>
-        <field name="report_file">odoo_psak_consolidation.report_financial_pdf</field>
         <field name="print_report_name">'Financial Report'</field>
         <field name="binding_model_id" eval="False"/>
     </record>
@@ -18,11 +17,11 @@
             <t t-call="web.external_layout">
                 <div class="page">
                     <div class="text-center mb-4">
-                        <h2><t t-esc="report_data.get('report_name')"/></h2>
+                        <h2><t t-out="report_data.get('report_name')"/></h2>
                         <h4 t-if="report_data.get('date_from') or report_data.get('date_to')">
-                            <span t-if="report_data.get('date_from')"><t t-esc="report_data.get('date_from')"/></span>
+                            <span t-if="report_data.get('date_from')"><t t-out="report_data.get('date_from')"/></span>
                             <span t-if="report_data.get('date_from') and report_data.get('date_to')"> to </span>
-                            <span t-if="report_data.get('date_to')"><t t-esc="report_data.get('date_to')"/></span>
+                            <span t-if="report_data.get('date_to')"><t t-out="report_data.get('date_to')"/></span>
                         </h4>
                     </div>
 
@@ -38,13 +37,13 @@
                             <t t-foreach="report_data.get('lines', [])" t-as="line">
                                 <tr>
                                     <td t-att-style="'padding-left: ' + str(line.get('level', 0) * 20) + 'px; ' + ('font-weight: bold;' if line.get('type') == 'view' else '')">
-                                        <span t-esc="line.get('name')"/>
+                                        <span t-out="line.get('name')"/>
                                     </td>
                                     <td t-att-style="('font-weight: bold;' if line.get('type') == 'view' else '')">
-                                        <span t-esc="line.get('code')"/>
+                                        <span t-out="line.get('code')"/>
                                     </td>
                                     <td class="text-end" t-att-style="('font-weight: bold;' if line.get('type') == 'view' else '')">
-                                        <span t-esc="line.get('balance')" t-options="{'widget': 'monetary', 'display_currency': docs.env.company.currency_id}"/>
+                                        <span t-out="line.get('balance')" t-options="{'widget': 'monetary', 'display_currency': docs.env.company.currency_id}"/>
                                     </td>
                                 </tr>
                             </t>

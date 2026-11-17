@@ -4,7 +4,7 @@
         <field name="name">consol.report.tree</field>
         <field name="model">consol.report</field>
         <field name="arch" type="xml">
-            <list string="Financial Report Templates">
+            <list string="Template Laporan Keuangan">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="report_type"/>
@@ -18,32 +18,32 @@
         <field name="name">consol.report.form</field>
         <field name="model">consol.report</field>
         <field name="arch" type="xml">
-            <form string="Dynamic Financial Report Template (No-Code)">
+            <form string="Template Laporan Keuangan Dinamis">
                 <header>
-                    <button name="action_sync_accounts_to_lines" string="Auto-Assign Accounts from CoA" type="object" class="btn-primary" icon="fa-refresh"/>
+                    <button name="action_sync_accounts_to_lines" string="Sinkronkan Akun Otomatis dari COA" type="object" class="btn-primary" icon="refresh"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" string="Report Template Name"/>
+                        <label for="name" string="Nama Template Laporan"/>
                         <h1>
-                            <field name="name" placeholder="e.g. Consolidated Statement of Financial Position"/>
+                            <field name="name" placeholder="Contoh: Laporan Posisi Keuangan Konsolidasian"/>
                         </h1>
                     </div>
                     <group>
-                        <group string="Display Settings">
+                        <group string="Pengaturan Tampilan">
                             <field name="report_type"/>
                             <field name="group_id"/>
                             <field name="comparison"/>
                             <field name="rounding"/>
                         </group>
-                        <group string="Column Options">
+                        <group string="Opsi Kolom Laporan">
                             <field name="show_entity_columns"/>
                             <field name="show_elimination_column"/>
                             <field name="show_nci_split"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Report Lines">
+                        <page string="Baris Laporan Keuangan">
                             <field name="line_ids">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -60,7 +60,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Letterhead &amp; Footer">
+                        <page string="Kop Surat &amp; Catatan Kaki">
                             <group>
                                 <field name="header_text"/>
                                 <field name="footer_text"/>
@@ -74,13 +74,44 @@
     </record>
 
     <record id="action_consol_report" model="ir.actions.act_window">
-        <field name="name">Financial Report Templates</field>
+        <field name="name">Template Laporan Keuangan</field>
         <field name="res_model">consol.report</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Build consolidated financial statements without code!
+                Buat dan sesuaikan template laporan keuangan konsolidasi!
             </p>
         </field>
+    </record>
+
+    <!-- Client Actions: Langsung Membuka Interactive Viewer Tiap Laporan -->
+    <record id="action_consol_report_balance_sheet" model="ir.actions.client">
+        <field name="name">Laporan Posisi Keuangan (Neraca)</field>
+        <field name="tag">consol_report_viewer_action</field>
+        <field name="context">{'default_report_type': 'balance_sheet', 'default_period_id': 'all'}</field>
+    </record>
+
+    <record id="action_consol_report_profit_loss" model="ir.actions.client">
+        <field name="name">Laporan Laba Rugi &amp; OCI</field>
+        <field name="tag">consol_report_viewer_action</field>
+        <field name="context">{'default_report_type': 'profit_loss', 'default_period_id': 'all'}</field>
+    </record>
+
+    <record id="action_consol_report_cash_flow" model="ir.actions.client">
+        <field name="name">Laporan Arus Kas</field>
+        <field name="tag">consol_report_viewer_action</field>
+        <field name="context">{'default_report_type': 'cash_flow', 'default_period_id': 'all'}</field>
+    </record>
+
+    <record id="action_consol_report_equity" model="ir.actions.client">
+        <field name="name">Laporan Perubahan Ekuitas</field>
+        <field name="tag">consol_report_viewer_action</field>
+        <field name="context">{'default_report_type': 'equity_changes', 'default_period_id': 'all'}</field>
+    </record>
+
+    <record id="action_consol_report_worksheet" model="ir.actions.client">
+        <field name="name">Kertas Kerja Konsolidasi</field>
+        <field name="tag">consol_report_viewer_action</field>
+        <field name="context">{'default_report_type': 'worksheet', 'default_period_id': 'all'}</field>
     </record>
 </odoo>

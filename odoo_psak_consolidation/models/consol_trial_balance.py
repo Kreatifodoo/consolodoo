@@ -3,35 +3,35 @@ from odoo import models, fields, api, _
 
 class ConsolTrialBalance(models.Model):
     _name = 'consol.trial.balance'
-    _description = 'Entity Trial Balance per Period'
+    _description = 'Neraca Saldo Entitas per Periode'
     _order = 'period_id, entity_id'
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
+        string='Periode Konsolidasi',
         required=True,
         ondelete='cascade')
 
     entity_id = fields.Many2one(
         'consol.entity',
-        string='Entity',
+        string='Entitas Konsolidasi',
         required=True,
         ondelete='cascade')
 
     functional_currency_id = fields.Many2one(
         'res.currency',
-        string='Functional Currency',
+        string='Mata Uang Fungsional',
         related='entity_id.functional_currency_id')
 
     reporting_currency_id = fields.Many2one(
         'res.currency',
-        string='Reporting Currency',
+        string='Mata Uang Pelaporan',
         related='period_id.currency_id')
 
     line_ids = fields.One2many(
         'consol.trial.balance.line',
         'trial_balance_id',
-        string='Trial Balance Lines')
+        string='Baris Neraca Saldo')
 
     total_debit_rc = fields.Float(
         string='Total Debit (RC)',
@@ -39,18 +39,19 @@ class ConsolTrialBalance(models.Model):
         store=True)
 
     total_credit_rc = fields.Float(
-        string='Total Credit (RC)',
+        string='Total Kredit (RC)',
         compute='_compute_totals',
         store=True)
 
     total_balance_rc = fields.Float(
-        string='Total Balance (RC)',
+        string='Total Saldo (RC)',
         compute='_compute_totals',
         store=True)
 
-    _sql_constraints = [
-        ('period_entity_unique', 'unique(period_id, entity_id)', 'Trial balance for this entity and period already exists!'),
-    ]
+    _period_entity_unique = models.Constraint(
+        'unique(period_id, entity_id)',
+        'Neraca saldo untuk entitas dan periode ini sudah ada!',
+    )
 
     @api.depends('line_ids.balance_rc')
     def _compute_totals(self):
@@ -64,76 +65,76 @@ class ConsolTrialBalance(models.Model):
 
 class ConsolTrialBalanceLine(models.Model):
     _name = 'consol.trial.balance.line'
-    _description = 'Consolidation Worksheet Account Balance Line'
+    _description = 'Rincian Baris Saldo Akun Kertas Kerja'
     _order = 'consol_account_id, source_account_id'
 
     trial_balance_id = fields.Many2one(
         'consol.trial.balance',
-        string='Trial Balance',
+        string='Neraca Saldo',
         required=True,
         ondelete='cascade')
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Period',
+        string='Periode',
         related='trial_balance_id.period_id',
         store=True,
         index=True)
 
     entity_id = fields.Many2one(
         'consol.entity',
-        string='Entity',
+        string='Entitas',
         related='trial_balance_id.entity_id',
         store=True,
         index=True)
 
     consol_account_id = fields.Many2one(
         'consol.account',
-        string='Consolidation Account',
+        string='Akun Konsolidasi',
         required=True,
         ondelete='restrict',
         index=True)
 
     source_account_id = fields.Many2one(
         'account.account',
-        string='Source Odoo Account',
+        string='Akun Odoo Asal',
         ondelete='set null')
 
-    external_code = fields.Char(string='External Account Code')
-    external_name = fields.Char(string='External Account Name')
+    external_code = fields.Char(string='Kode Akun Eksternal')
+    external_name = fields.Char(string='Nama Akun Eksternal')
 
     partner_id = fields.Many2one(
         'res.partner',
-        string='Intercompany Partner',
-        help="Partner recorded on transaction, used for intercompany matching.")
+        string='Mitra Antar-Perusahaan',
+        help="Mitra/partner pada transaksi yang digunakan untuk pencocokan transaksi intragrup.")
 
     statement = fields.Selection(
         related='consol_account_id.statement',
         store=True,
-        string='Financial Statement')
+        string='Kelompok Laporan Keuangan')
 
     translation_rate_type = fields.Selection(
         related='consol_account_id.translation_rate',
         store=True,
-        string='Rate Type')
+        string='Jenis Kurs')
 
     balance_fc = fields.Float(
-        string='Functional Currency Balance (FC)',
+        string='Saldo Mata Uang Fungsional (FC)',
         digits=(16, 2),
         default=0.0)
 
     movement_fc = fields.Float(
-        string='YTD Movement (FC)',
+        string='Pergerakan Saldo (FC)',
         digits=(16, 2),
         default=0.0)
 
     rate_used = fields.Float(
-        string='Rate Applied',
+        string='Kurs Diterapkan',
         digits=(12, 6),
         default=1.0)
 
     balance_rc = fields.Float(
-        string='Reporting Currency Balance (RC)',
+        string='Saldo Mata Uang Pelaporan (RC)',
         digits=(16, 2),
         default=0.0)
 

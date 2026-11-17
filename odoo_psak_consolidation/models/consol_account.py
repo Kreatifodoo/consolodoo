@@ -4,77 +4,78 @@ from odoo.exceptions import ValidationError
 
 class ConsolAccount(models.Model):
     _name = 'consol.account'
-    _description = 'Consolidation Chart of Accounts'
+    _description = 'Bagan Akun Konsolidasi'
     _inherit = ['mail.thread']
     _order = 'code, id'
 
-    name = fields.Char(string='Account Name', required=True, tracking=True)
-    code = fields.Char(string='Account Code', required=True, tracking=True, index=True)
+    name = fields.Char(string='Nama Akun', required=True, tracking=True)
+    code = fields.Char(string='Kode Akun', required=True, tracking=True, index=True)
     
     account_type = fields.Selection([
-        ('asset_receivable', 'Receivable'),
-        ('asset_cash', 'Bank and Cash'),
-        ('asset_current', 'Current Assets'),
-        ('asset_non_current', 'Non-current Assets'),
-        ('asset_prepayments', 'Prepayments'),
-        ('asset_fixed', 'Fixed Assets'),
-        ('liability_payable', 'Payable'),
-        ('liability_credit_card', 'Credit Card'),
-        ('liability_current', 'Current Liabilities'),
-        ('liability_non_current', 'Non-current Liabilities'),
-        ('equity', 'Equity'),
-        ('equity_unaffected', 'Current Year Earnings'),
-        ('income', 'Income'),
-        ('income_other', 'Other Income'),
-        ('expense', 'Expenses'),
-        ('expense_depreciation', 'Depreciation'),
-        ('expense_direct_cost', 'Cost of Goods Sold'),
-        ('off_balance', 'Off-Balance Sheet')
-    ], string='Account Type', required=True, tracking=True, default='asset_current')
+        ('asset_receivable', 'Piutang Usaha'),
+        ('asset_cash', 'Kas dan Bank'),
+        ('asset_current', 'Aset Lancar'),
+        ('asset_non_current', 'Aset Tidak Lancar'),
+        ('asset_prepayments', 'Biaya Dibayar di Muka'),
+        ('asset_fixed', 'Aset Tetap'),
+        ('liability_payable', 'Utang Usaha'),
+        ('liability_credit_card', 'Kartu Kredit'),
+        ('liability_current', 'Liabilitas Jangka Pendek'),
+        ('liability_non_current', 'Liabilitas Jangka Panjang'),
+        ('equity', 'Ekuitas'),
+        ('equity_unaffected', 'Laba Tahun Berjalan'),
+        ('income', 'Pendapatan Usaha'),
+        ('income_other', 'Pendapatan Lain-lain'),
+        ('expense', 'Beban Operasional'),
+        ('expense_depreciation', 'Penyusutan & Amortisasi'),
+        ('expense_direct_cost', 'Beban Pokok Penjualan (HPP)'),
+        ('off_balance', 'Di Luar Neraca (Off-Balance)')
+    ], string='Tipe Akun', required=True, tracking=True, default='asset_current')
 
     statement = fields.Selection([
-        ('bs', 'Balance Sheet'),
-        ('pl', 'Profit and Loss'),
-        ('oci', 'Other Comprehensive Income (OCI)'),
-        ('equity', 'Statement of Changes in Equity'),
-        ('cf_memo', 'Cash Flow Memo')
-    ], string='Financial Statement', required=True, tracking=True, default='bs')
+        ('bs', 'Laporan Posisi Keuangan (Neraca)'),
+        ('pl', 'Laporan Laba Rugi'),
+        ('oci', 'Penghasilan Komprehensif Lain (OCI)'),
+        ('equity', 'Laporan Perubahan Ekuitas'),
+        ('cf_memo', 'Memo Arus Kas')
+    ], string='Kelompok Laporan Keuangan', required=True, tracking=True, default='bs')
 
     translation_rate = fields.Selection([
-        ('closing', 'Closing Rate'),
-        ('average', 'Average Rate'),
-        ('historical', 'Historical Rate')
-    ], string='Translation Rate', required=True, default='closing',
-       help="Exchange rate used to translate functional currency to presentation currency (IAS 21).")
+        ('closing', 'Kurs Penutupan (Closing Rate)'),
+        ('average', 'Kurs Rata-Rata (Average Rate)'),
+        ('historical', 'Kurs Historis (Historical Rate)')
+    ], string='Tipe Kurs Translasi (PSAK 10)', required=True, default='closing',
+       help="Jenis kurs yang digunakan untuk mentranslasikan mata uang fungsional ke mata uang penyajian sesuai PSAK 10 / IAS 21.")
 
     is_intercompany = fields.Boolean(
-        string='Intercompany Account',
+        string='Akun Antar-Perusahaan (Intercompany)',
         default=False,
         tracking=True,
-        help="Check if this account must be reconciled and eliminated in intragroup transactions.")
+        help="Centang jika akun ini wajib direkonsiliasi dan dieliminasi dalam transaksi antar-perusahaan.")
 
     ic_counterpart_id = fields.Many2one(
         'consol.account',
-        string='Intercompany Counterpart Account',
-        help="Matching counterpart account in related entity (e.g. IC Receivable matches IC Payable).")
+        string='Akun Lawan Antar-Perusahaan',
+        help="Akun lawan yang berpasangan di entitas terkait (misal: Piutang Intragrup berpasangan dengan Utang Intragrup).")
 
     parent_id = fields.Many2one(
         'consol.account',
-        string='Parent Account',
+        string='Akun Induk',
         index=True,
         ondelete='restrict')
 
     child_ids = fields.One2many(
         'consol.account',
         'parent_id',
-        string='Sub-Accounts')
+        string='Sub-Akun')
 
-    active = fields.Boolean(string='Active', default=True)
-    note = fields.Text(string='Notes / Description')
+    active = fields.Boolean(string='Aktif', default=True)
+    note = fields.Text(string='Catatan / Deskripsi Akun')
 
-    _sql_constraints = [
-        ('code_unique', 'unique(code)', 'Consolidation account code must be unique!')
-    ]
+    _code_unique = models.Constraint(
+        'unique(code)',
+        'Kode akun konsolidasi harus unik!',
+    )
 
     @api.depends('code', 'name')
     def _compute_display_name(self):
@@ -84,12 +85,12 @@ class ConsolAccount(models.Model):
     @api.constrains('parent_id')
     def _check_parent_recursion(self):
         if not self._check_recursion():
-            raise ValidationError(_('Circular account hierarchy detected for account %s!', self.display_name))
+            raise ValidationError(_('Terdeteksi hierarki akun melingkar (circular) pada akun %s!', self.display_name))
 
     @api.model
     def action_open_import_company_coa_wizard(self):
         return {
-            'name': _('Import Master CoA from Company & Auto-Map'),
+            'name': _('Salin Master Akun dari Perusahaan & Petakan Otomatis'),
             'type': 'ir.actions.act_window',
             'res_model': 'consol.import.company.coa.wizard',
             'view_mode': 'form',

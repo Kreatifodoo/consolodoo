@@ -4,21 +4,21 @@
         <field name="name">consol.auto.map.wizard.form</field>
         <field name="model">consol.auto.map.wizard</field>
         <field name="arch" type="xml">
-            <form string="Auto-Map Entity Accounts">
+            <form string="Pemetaan Akun Otomatis">
                 <group>
                     <field name="entity_ids" widget="many2many_tags"/>
                     <field name="match_strategy"/>
                 </group>
                 <footer>
-                    <button name="action_execute_auto_map" string="Execute Auto-Map" type="object" class="oe_highlight"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    <button name="action_execute_auto_map" string="Jalankan Pemetaan Otomatis" type="object" class="oe_highlight"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_consol_auto_map_wizard" model="ir.actions.act_window">
-        <field name="name">Auto-Map Entity Accounts</field>
+        <field name="name">Pemetaan Akun Otomatis</field>
         <field name="res_model">consol.auto.map.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

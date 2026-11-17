@@ -3,66 +3,68 @@ from odoo import models, fields, api, _
 
 class ConsolEntity(models.Model):
     _name = 'consol.entity'
-    _description = 'Consolidation Group Member Entity'
+    _description = 'Entitas Anggota Grup Konsolidasi'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'code, name'
 
-    name = fields.Char(string='Entity Name', required=True, tracking=True)
-    code = fields.Char(string='Entity Code', required=True, size=15, tracking=True,
-                       help="Short code used as column header in consolidation worksheets.")
+    name = fields.Char(string='Nama Entitas', required=True, tracking=True)
+    code = fields.Char(string='Kode Entitas', required=True, size=15, tracking=True,
+                       help="Kode singkat yang digunakan sebagai judul kolom dalam kertas kerja konsolidasi.")
     
     company_id = fields.Many2one(
         'res.company',
-        string='Odoo Company (Internal)',
-        help="Link to local Odoo company if this entity exists in this database. Leave empty for external entities.")
+        string='Perusahaan Odoo (Internal)',
+        help="Tautan ke perusahaan Odoo lokal jika entitas ini berada di database ini. Biarkan kosong untuk entitas eksternal.")
 
     source_type = fields.Selection([
-        ('odoo', 'Odoo Database'),
-        ('import', 'External Import (CSV/XLSX)')
-    ], string='Data Source', default='odoo', required=True, tracking=True)
+        ('odoo', 'Database Odoo Lokal'),
+        ('import', 'Impor Eksternal (CSV/Excel)')
+    ], string='Sumber Data', default='odoo', required=True, tracking=True,
+       help="Sumber penarikan data neraca saldo entitas.")
 
     functional_currency_id = fields.Many2one(
         'res.currency',
-        string='Functional Currency (IAS 21)',
+        string='Mata Uang Fungsional (PSAK 10)',
         required=True,
         default=lambda self: self.env.company.currency_id,
         tracking=True,
-        help="Currency of the primary economic environment in which the entity operates.")
+        help="Mata uang lingkungan ekonomi utama tempat entitas beroperasi sesuai PSAK 10 / IAS 21.")
 
     group_ids = fields.Many2many(
         'consol.group',
         'consol_group_entity_rel',
         'entity_id',
         'group_id',
-        string='Consolidation Groups')
+        string='Grup Konsolidasi')
 
     partner_id = fields.Many2one(
         'res.partner',
-        string='Entity Partner Representation',
-        help="Contact/Partner representing this entity in books of other entities for intragroup matching.")
+        string='Kontak/Mitra Representasi Entitas',
+        help="Kontak/partner yang mewakili entitas ini dalam pembukuan entitas lain untuk pencocokan transaksi intragrup.")
 
     is_investment_entity = fields.Boolean(
-        string='Investment Entity (IFRS 10 par. 31)',
+        string='Entitas Investasi (PSAK 65 par. 31)',
         default=False,
         tracking=True,
-        help="If checked, entity is exempt from consolidation and measured at fair value through profit or loss.")
+        help="Jika dicentang, entitas dikecualikan dari konsolidasi dan diukur pada nilai wajar melalui laba rugi.")
 
     parent_ownership_ids = fields.One2many(
         'consol.ownership',
         'child_id',
-        string='Ownership Structure (Owned By)')
+        string='Struktur Kepemilikan (Dimiliki Oleh)')
 
     child_ownership_ids = fields.One2many(
         'consol.ownership',
         'parent_id',
-        string='Investments in Other Entities (Owns)')
+        string='Investasi pada Entitas Lain (Memiliki)')
 
-    active = fields.Boolean(string='Active', default=True)
-    note = fields.Text(string='Additional Notes')
+    active = fields.Boolean(string='Aktif', default=True)
+    note = fields.Text(string='Catatan Tambahan')
 
-    _sql_constraints = [
-        ('code_unique', 'unique(code)', 'Entity code must be unique!')
-    ]
+    _code_unique = models.Constraint(
+        'unique(code)',
+        'Kode entitas harus unik!',
+    )
 
     @api.onchange('company_id')
     def _onchange_company_id(self):

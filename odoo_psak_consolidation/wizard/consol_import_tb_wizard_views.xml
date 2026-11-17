@@ -4,7 +4,7 @@
         <field name="name">consol.import.tb.wizard.form</field>
         <field name="model">consol.import.tb.wizard</field>
         <field name="arch" type="xml">
-            <form string="Import External Entity Trial Balance">
+            <form string="Impor Neraca Saldo Entitas Eksternal">
                 <group>
                     <field name="period_id"/>
                     <field name="entity_id"/>
@@ -12,18 +12,18 @@
                     <field name="filename" invisible="1"/>
                 </group>
                 <p class="text-muted">
-                    CSV file format: <code>account_code, account_name, balance_fc</code>
+                    Format file CSV: <code>kode_akun, nama_akun, saldo_valuta_fungsional</code>
                 </p>
                 <footer>
-                    <button name="action_import_file" string="Upload &amp; Import" type="object" class="oe_highlight"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    <button name="action_import_file" string="Unggah &amp; Impor" type="object" class="oe_highlight"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_consol_import_tb_wizard" model="ir.actions.act_window">
-        <field name="name">Import External Trial Balance</field>
+        <field name="name">Impor Neraca Saldo Eksternal</field>
         <field name="res_model">consol.import.tb.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

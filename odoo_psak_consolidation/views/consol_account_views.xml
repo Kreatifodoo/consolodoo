@@ -4,13 +4,13 @@
         <field name="name">consol.account.tree</field>
         <field name="model">consol.account</field>
         <field name="arch" type="xml">
-            <list string="Chart of Accounts">
+            <list string="Bagan Akun Konsolidasi">
                 <header>
                     <button name="action_open_import_company_coa_wizard"
                             type="object"
-                            string="Import from Company CoA"
+                            string="Salin dari Master Akun Perusahaan"
                             class="btn-primary"
-                            icon="fa-download"/>
+                            icon="download"/>
                 </header>
                 <field name="code"/>
                 <field name="name"/>
@@ -27,33 +27,33 @@
         <field name="name">consol.account.form</field>
         <field name="model">consol.account</field>
         <field name="arch" type="xml">
-            <form string="Consolidation Account">
+            <form string="Akun Konsolidasi">
                 <sheet>
                     <div class="oe_title">
-                        <label for="code" string="Account Code"/>
+                        <label for="code" string="Kode Akun"/>
                         <h1>
-                            <field name="code" placeholder="e.g. 101000"/>
+                            <field name="code" placeholder="Contoh: 101000"/>
                         </h1>
-                        <label for="name" string="Account Name"/>
+                        <label for="name" string="Nama Akun"/>
                         <h2>
-                            <field name="name" placeholder="e.g. Cash and Cash Equivalents"/>
+                            <field name="name" placeholder="Contoh: Kas dan Setara Kas"/>
                         </h2>
                     </div>
                     <group>
-                        <group string="Account Classification">
+                        <group string="Klasifikasi Akun">
                             <field name="account_type"/>
                             <field name="statement"/>
                             <field name="translation_rate"/>
                             <field name="parent_id"/>
                         </group>
-                        <group string="Intercompany Configuration (IC)">
+                        <group string="Pengaturan Antar-Perusahaan (Intercompany)">
                             <field name="is_intercompany"/>
                             <field name="ic_counterpart_id" invisible="not is_intercompany"/>
                             <field name="active"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Sub-Accounts" invisible="not child_ids">
+                        <page string="Sub-Akun" invisible="not child_ids">
                             <field name="child_ids" readonly="1">
                                 <list>
                                     <field name="code"/>
@@ -62,7 +62,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Notes">
+                        <page string="Catatan">
                             <field name="note"/>
                         </page>
                     </notebook>
@@ -76,29 +76,29 @@
         <field name="name">consol.account.search</field>
         <field name="model">consol.account</field>
         <field name="arch" type="xml">
-            <search string="Search Consolidation Accounts">
+            <search string="Cari Akun Konsolidasi">
                 <field name="name"/>
                 <field name="code"/>
-                <filter string="Balance Sheet (BS)" name="filter_bs" domain="[('statement', '=', 'bs')]"/>
-                <filter string="Profit &amp; Loss (PL)" name="filter_pl" domain="[('statement', '=', 'pl')]"/>
-                <filter string="Intercompany Accounts" name="filter_ic" domain="[('is_intercompany', '=', True)]"/>
+                <filter string="Neraca (Posisi Keuangan)" name="filter_bs" domain="[('statement', '=', 'bs')]"/>
+                <filter string="Laba Rugi" name="filter_pl" domain="[('statement', '=', 'pl')]"/>
+                <filter string="Akun Antar-Perusahaan (IC)" name="filter_ic" domain="[('is_intercompany', '=', True)]"/>
                 <group>
-                    <filter string="Statement Classification" name="group_statement" domain="" context="{'group_by': 'statement'}"/>
-                    <filter string="Account Type" name="group_account_type" domain="" context="{'group_by': 'account_type'}"/>
-                    <filter string="Translation Rate" name="group_translation" domain="" context="{'group_by': 'translation_rate'}"/>
+                    <filter string="Kelompok Laporan" name="group_statement" domain="" context="{'group_by': 'statement'}"/>
+                    <filter string="Tipe Akun" name="group_account_type" domain="" context="{'group_by': 'account_type'}"/>
+                    <filter string="Tipe Kurs Translasi" name="group_translation" domain="" context="{'group_by': 'translation_rate'}"/>
                 </group>
             </search>
         </field>
     </record>
 
     <record id="action_consol_account" model="ir.actions.act_window">
-        <field name="name">Chart of Accounts (COA)</field>
+        <field name="name">Bagan Akun Konsolidasi (COA)</field>
         <field name="res_model">consol.account</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_consol_account_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Add your first consolidation account!
+                Tambahkan akun konsolidasi baru!
             </p>
         </field>
     </record>

@@ -3,87 +3,85 @@ from odoo import models, fields, api, _
 
 class ConsolRate(models.Model):
     _name = 'consol.rate'
-    _description = 'Consolidation Exchange Rate per Period (IAS 21)'
+    _description = 'Kurs Valuta Asing per Periode Konsolidasi (PSAK 10)'
     _order = 'period_id, currency_id'
 
     group_id = fields.Many2one(
         'consol.group',
-        string='Consolidation Group',
+        string='Grup Konsolidasi',
         required=True,
         ondelete='cascade')
 
     reporting_currency_id = fields.Many2one(
         'res.currency',
-        string='Reporting Currency',
+        string='Mata Uang Pelaporan',
         related='group_id.currency_id')
 
     currency_id = fields.Many2one(
         'res.currency',
-        string='Functional Currency',
+        string='Mata Uang Fungsional',
         required=True,
         ondelete='cascade',
-        help="Subsidiary currency to be translated into reporting currency.")
+        help="Mata uang entitas anak yang akan ditranslasikan ke mata uang pelaporan.")
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
+        string='Periode Konsolidasi',
         required=True,
         ondelete='cascade')
 
     closing_rate = fields.Float(
-        string='Closing Rate',
+        string='Kurs Penutupan (Closing Rate)',
         digits=(12, 6),
         default=1.0,
         required=True,
-        help="Exchange rate at period end for translating Assets and Liabilities (IAS 21 par. 39a).")
+        help="Kurs pada akhir periode untuk mentranslasikan Aset dan Liabilitas (PSAK 10 / IAS 21 par. 39a).")
 
     average_rate = fields.Float(
-        string='Average Rate',
+        string='Kurs Rata-Rata (Average Rate)',
         digits=(12, 6),
         default=1.0,
         required=True,
-        help="Average exchange rate for the period for translating Income and Expenses (IAS 21 par. 39b).")
+        help="Kurs rata-rata selama periode untuk mentranslasikan Pendapatan dan Beban (PSAK 10 / IAS 21 par. 39b).")
 
     historical_rate = fields.Float(
-        string='Historical Rate',
+        string='Kurs Historis (Historical Rate)',
         digits=(12, 6),
         default=1.0,
-        help="Exchange rate at transaction/acquisition date for Equity items.")
+        help="Kurs pada tanggal transaksi/akuisisi untuk pos-pos Ekuitas.")
 
     is_custom = fields.Boolean(
-        string='Custom Rate (Manual)',
+        string='Kurs Kustom (Manual)',
         default=False,
-        help="Indicates the rate was overridden manually by user.")
+        help="Menandakan bahwa kurs dimasukkan atau diubah secara manual oleh pengguna.")
 
-    _sql_constraints = [
-        ('period_currency_unique', 'unique(period_id, currency_id)', 'Exchange rate for this currency in this period already exists!'),
-    ]
+    _period_currency_unique = models.Constraint(
+        'unique(period_id, currency_id)',
+        'Kurs untuk mata uang ini pada periode tersebut sudah ada!',
+    )
+
+    @api.onchange('period_id')
+    def _onchange_period_id(self):
+        if self.period_id:
+            self.group_id = self.period_id.group_id
 
     @api.model
     def get_or_create_rate(self, period, currency):
-        """
-        Mencari atau membuat kurs default berdasarkan data res.currency.rate Odoo.
-        """
-        existing = self.search([('period_id', '=', period.id), ('currency_id', '=', currency.id)], limit=1)
-        if existing:
-            return existing
+        """Ambil atau buat record kurs untuk periode dan mata uang tertentu."""
+        if not period or not currency:
+            return self.browse()
+        rate = self.search([
+            ('period_id', '=', period.id),
+            ('currency_id', '=', currency.id)
+        ], limit=1)
+        if not rate:
+            rate = self.create({
+                'period_id': period.id,
+                'group_id': period.group_id.id,
+                'currency_id': currency.id,
+                'closing_rate': 1.0,
+                'average_rate': 1.0,
+                'historical_rate': 1.0,
+            })
+        return rate
 
-        reporting_curr = period.group_id.currency_id
-        if currency == reporting_curr:
-            c_rate = 1.0
-            a_rate = 1.0
-        else:
-            # Ambil kurs dari Odoo per date_to
-            c_rate = currency._get_conversion_rate(currency, reporting_curr, period.group_id.parent_entity_id.company_id or self.env.company, period.date_to) or 1.0
-            # Estimasi average rate jika ada date_from
-            rate_start = currency._get_conversion_rate(currency, reporting_curr, period.group_id.parent_entity_id.company_id or self.env.company, period.date_from) or c_rate
-            a_rate = (c_rate + rate_start) / 2.0
-
-        return self.create({
-            'group_id': period.group_id.id,
-            'currency_id': currency.id,
-            'period_id': period.id,
-            'closing_rate': c_rate,
-            'average_rate': a_rate,
-            'historical_rate': c_rate,
-        })

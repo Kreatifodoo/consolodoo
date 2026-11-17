@@ -4,7 +4,7 @@
         <field name="name">consol.ownership.tree</field>
         <field name="model">consol.ownership</field>
         <field name="arch" type="xml">
-            <list string="Ownership Structure &amp; Control">
+            <list string="Struktur Kepemilikan &amp; Pengendalian">
                 <field name="parent_id"/>
                 <field name="child_id"/>
                 <field name="percentage"/>
@@ -24,15 +24,15 @@
         <field name="name">consol.ownership.form</field>
         <field name="model">consol.ownership</field>
         <field name="arch" type="xml">
-            <form string="Share Ownership Structure">
+            <form string="Struktur Kepemilikan Saham">
                 <sheet>
                     <group>
-                        <group string="Entity Relationship">
+                        <group string="Hubungan Entitas">
                             <field name="parent_id"/>
                             <field name="child_id"/>
                             <field name="method"/>
                         </group>
-                        <group string="Percentage &amp; Voting Rights">
+                        <group string="Persentase Saham &amp; Hak Suara">
                             <field name="percentage"/>
                             <field name="voting_percentage"/>
                             <field name="effective_percentage"/>
@@ -40,11 +40,11 @@
                         </group>
                     </group>
                     <group>
-                        <group string="Control Period (PSAK 65 par. 20)">
+                        <group string="Periode Pengendalian (PSAK 65)">
                             <field name="date_from"/>
                             <field name="date_to"/>
                         </group>
-                        <group string="Acquisition Measurement (PSAK 22)">
+                        <group string="Pengukuran Saat Akuisisi (PSAK 22 / IFRS 3)">
                             <field name="nci_measurement"/>
                             <field name="goodwill_amount"/>
                             <field name="nci_at_acquisition"/>
@@ -52,8 +52,8 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Control Analysis Notes">
-                            <field name="note" placeholder="Description of power indicators, variable returns, and principal vs agent analysis..."/>
+                        <page string="Catatan Analisis Pengendalian">
+                            <field name="note" placeholder="Deskripsi indikator kekuasaan, imbal hasil variabel, dan analisis hubungan prinsipal vs agen..."/>
                         </page>
                     </notebook>
                 </sheet>
@@ -63,12 +63,12 @@
     </record>
 
     <record id="action_consol_ownership" model="ir.actions.act_window">
-        <field name="name">Ownership Structure</field>
+        <field name="name">Struktur Kepemilikan</field>
         <field name="res_model">consol.ownership</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Define capital ownership structure and voting rights between entities!
+                Tentukan struktur kepemilikan modal dan hak suara antar-entitas!
             </p>
         </field>
     </record>

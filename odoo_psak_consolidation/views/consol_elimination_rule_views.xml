@@ -4,7 +4,7 @@
         <field name="name">consol.elimination.rule.tree</field>
         <field name="model">consol.elimination.rule</field>
         <field name="arch" type="xml">
-            <list string="Automated Elimination Rules">
+            <list string="Aturan Eliminasi Otomatis (PSAK 65)">
                 <field name="sequence" widget="handle"/>
                 <field name="code"/>
                 <field name="name"/>
@@ -18,12 +18,12 @@
         <field name="name">consol.elimination.rule.form</field>
         <field name="model">consol.elimination.rule</field>
         <field name="arch" type="xml">
-            <form string="Automated Elimination Rule">
+            <form string="Aturan Eliminasi Konsolidasi">
                 <sheet>
                     <div class="oe_title">
-                        <label for="code" string="Rule Code"/>
+                        <label for="code" string="Kode Aturan"/>
                         <h1><field name="code"/></h1>
-                        <label for="name" string="Rule Name"/>
+                        <label for="name" string="Nama Aturan"/>
                         <h2><field name="name"/></h2>
                     </div>
                     <group>
@@ -37,13 +37,13 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Target Accounts">
+                        <page string="Akun Sasaran Eliminasi">
                             <group>
                                 <field name="debit_account_ids" widget="many2many_tags"/>
                                 <field name="credit_account_ids" widget="many2many_tags"/>
                             </group>
                         </page>
-                        <page string="PSAK Basis / Description">
+                        <page string="Dasar PSAK / Keterangan Aturan">
                             <field name="description"/>
                         </page>
                     </notebook>
@@ -53,7 +53,7 @@
     </record>
 
     <record id="action_consol_elimination_rule" model="ir.actions.act_window">
-        <field name="name">Elimination Rules</field>
+        <field name="name">Aturan Eliminasi (PSAK 65)</field>
         <field name="res_model">consol.elimination.rule</field>
         <field name="view_mode">list,form</field>
     </record>

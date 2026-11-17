@@ -3,9 +3,9 @@ from odoo import models, fields, api
 class AccountAccount(models.Model):
     _inherit = 'account.account'
 
-    name_en = fields.Char(string='English Account Name')
-    parent_id = fields.Many2one('account.account', string='Parent Account', index=True, ondelete='cascade')
-    child_ids = fields.One2many('account.account', 'parent_id', string='Child Accounts')
+    name_en = fields.Char(string='Nama Akun Bahasa Inggris', help="Nama akun dalam bahasa Inggris untuk keperluan translasi atau pelaporan internasional.")
+    parent_id = fields.Many2one('account.account', string='Akun Induk', index=True, ondelete='cascade')
+    child_ids = fields.One2many('account.account', 'parent_id', string='Sub-Akun')
 
     @api.onchange('name')
     def _onchange_name_translate(self):

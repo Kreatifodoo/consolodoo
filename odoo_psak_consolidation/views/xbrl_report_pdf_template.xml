@@ -6,7 +6,7 @@
                 <div class="page">
                     <h2>XBRL Consolidation Report</h2>
                     <p>
-                        <strong>Period: </strong> <t t-esc="date_from"/> to <t t-esc="date_to"/>
+                        <strong>Period: </strong> <t t-out="date_from"/> to <t t-out="date_to"/>
                     </p>
                     
                     <table class="table table-sm table-bordered">
@@ -21,11 +21,11 @@
                                 <tr t-att-style="line['indent'] == 0 and 'font-weight: bold; background-color: #f8f9fa;' or (line['type'] == 'coa_line' and 'color: #495057; font-size: 0.9em;' or '')">
                                     <td t-attf-style="padding-left: {{ line['indent'] * 20 + 10 }}px;">
                                         <span t-att-title="line.get('code', '')">
-                                            <t t-esc="line['name']"/>
+                                            <t t-out="line['name']"/>
                                         </span>
                                     </td>
                                     <td class="text-end">
-                                        <t t-esc="'{0:,.2f}'.format(line['balance'])"/>
+                                        <t t-out="'{0:,.2f}'.format(line['balance'])"/>
                                     </td>
                                 </tr>
                             </t>
@@ -41,7 +41,6 @@
         <field name="model">consolidation.xbrl.report.engine</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">odoo_psak_consolidation.report_xbrl_consolidation</field>
-        <field name="report_file">odoo_psak_consolidation.report_xbrl_consolidation</field>
         <field name="binding_type">report</field>
     </record>
 </odoo>

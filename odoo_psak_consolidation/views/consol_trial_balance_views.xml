@@ -4,7 +4,7 @@
         <field name="name">consol.trial.balance.tree</field>
         <field name="model">consol.trial.balance</field>
         <field name="arch" type="xml">
-            <list string="Entity Trial Balances">
+            <list string="Neraca Saldo Entitas">
                 <field name="period_id"/>
                 <field name="entity_id"/>
                 <field name="functional_currency_id"/>
@@ -19,7 +19,7 @@
         <field name="name">consol.trial.balance.form</field>
         <field name="model">consol.trial.balance</field>
         <field name="arch" type="xml">
-            <form string="Entity Trial Balance">
+            <form string="Neraca Saldo Entitas">
                 <sheet>
                     <group>
                         <group>
@@ -33,7 +33,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Account Balance Details">
+                        <page string="Rincian Saldo Akun">
                             <field name="line_ids" readonly="1">
                                 <list>
                                     <field name="consol_account_id"/>
@@ -52,7 +52,7 @@
     </record>
 
     <record id="action_consol_trial_balance" model="ir.actions.act_window">
-        <field name="name">Entity Trial Balances</field>
+        <field name="name">Neraca Saldo Entitas</field>
         <field name="res_model">consol.trial.balance</field>
         <field name="view_mode">list,form</field>
     </record>

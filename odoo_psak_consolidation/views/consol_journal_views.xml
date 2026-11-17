@@ -4,7 +4,7 @@
         <field name="name">consol.journal.tree</field>
         <field name="model">consol.journal</field>
         <field name="arch" type="xml">
-            <list string="Consolidation Elimination Journals" decoration-muted="state == 'draft'">
+            <list string="Jurnal Eliminasi Konsolidasi" decoration-muted="state == 'draft'">
                 <field name="period_id"/>
                 <field name="code"/>
                 <field name="name"/>
@@ -22,19 +22,19 @@
         <field name="name">consol.journal.form</field>
         <field name="model">consol.journal</field>
         <field name="arch" type="xml">
-            <form string="Elimination Journal">
+            <form string="Jurnal Eliminasi">
                 <header>
-                    <button name="action_post" string="Post Journal" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state != 'posted'"/>
+                    <button name="action_post" string="Posting Jurnal" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_reset_draft" string="Kembalikan ke Draf" type="object" invisible="state != 'posted'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <label for="code" string="Journal Code (E1..E10 / MANUAL)"/>
+                        <label for="code" string="Kode Jurnal (E1..E10 / MANUAL)"/>
                         <h1>
                             <field name="code" readonly="state == 'posted'"/>
                         </h1>
-                        <label for="name" string="Journal Description"/>
+                        <label for="name" string="Deskripsi Jurnal"/>
                         <h2>
                             <field name="name" readonly="state == 'posted'"/>
                         </h2>
@@ -52,7 +52,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Elimination Lines">
+                        <page string="Baris Jurnal Eliminasi">
                             <field name="line_ids" readonly="state == 'posted'">
                                 <list editable="bottom">
                                     <field name="consol_account_id"/>
@@ -69,8 +69,8 @@
                                 <field name="total_credit"/>
                             </group>
                         </page>
-                        <page string="PSAK Basis / Supporting Notes">
-                            <field name="note" placeholder="Accounting standard references and working paper calculations..."/>
+                        <page string="Dasar PSAK / Catatan Pendukung">
+                            <field name="note" placeholder="Referensi standar akuntansi dan perhitungan kertas kerja..."/>
                         </page>
                     </notebook>
                 </sheet>
@@ -80,12 +80,12 @@
     </record>
 
     <record id="action_consol_journal" model="ir.actions.act_window">
-        <field name="name">Elimination Journals</field>
+        <field name="name">Jurnal Eliminasi</field>
         <field name="res_model">consol.journal</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Manage automated elimination journals (E1-E10) and manual adjustment journals!
+                Kelola jurnal eliminasi otomatis (E1-E10) dan jurnal penyesuaian manual!
             </p>
         </field>
     </record>

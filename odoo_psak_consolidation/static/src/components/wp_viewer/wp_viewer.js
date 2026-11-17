@@ -2,14 +2,14 @@
 
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, proxy, onWillStart } from "@odoo/owl";
 
 export class WPViewer extends Component {
     setup() {
         this.orm = useService("orm");
         this.actionService = useService("action");
         
-        this.state = useState({
+        this.state = proxy({
             data: null,
         });
 

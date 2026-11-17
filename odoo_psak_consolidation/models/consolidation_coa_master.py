@@ -84,9 +84,10 @@ class ConsolidationCoaMaster(models.Model):
     ], string='Type', required=True, default='asset_current')
     currency_id = fields.Many2one('res.currency', string='Account Currency')
     
-    _sql_constraints = [
-        ('code_company_uniq', 'unique (code, company_id)', 'The code of the account must be unique per company!')
-    ]
+    _code_company_uniq = models.Constraint(
+        'unique (code, company_id)',
+        'The code of the account must be unique per company!',
+    )
 
     @api.depends('code', 'name')
     def _compute_display_name(self):

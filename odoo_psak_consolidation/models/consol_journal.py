@@ -4,63 +4,63 @@ from odoo.exceptions import ValidationError, UserError
 
 class ConsolJournal(models.Model):
     _name = 'consol.journal'
-    _description = 'Consolidation Elimination Journal (E1-E10 & Manual Adjustments)'
+    _description = 'Jurnal Eliminasi Konsolidasi (E1-E10 & Penyesuaian Manual)'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'period_id, code, id'
 
-    name = fields.Char(string='Journal Description', required=True, tracking=True)
-    code = fields.Char(string='Journal Code', required=True, default='MANUAL', tracking=True,
-                       help="Example: E1, E2, E3, E4, E5, E6, E7, E8, E9, E10, or MANUAL.")
+    name = fields.Char(string='Deskripsi Jurnal', required=True, tracking=True)
+    code = fields.Char(string='Kode Jurnal', required=True, default='MANUAL', tracking=True,
+                       help="Contoh: E1, E2, E3, E4, E5, E6, E7, E8, E9, E10, atau MANUAL.")
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
+        string='Periode Konsolidasi',
         required=True,
         ondelete='cascade',
         tracking=True)
 
     group_id = fields.Many2one(
         'consol.group',
-        string='Consolidation Group',
+        string='Grup Konsolidasi',
         related='period_id.group_id',
         store=True)
 
     currency_id = fields.Many2one(
         'res.currency',
-        string='Reporting Currency',
+        string='Mata Uang Pelaporan',
         related='period_id.currency_id')
 
     origin = fields.Selection([
-        ('auto', 'Automated'),
-        ('manual', 'Manual / User')
-    ], string='Journal Source', default='manual', required=True, tracking=True)
+        ('auto', 'Otomatis'),
+        ('manual', 'Manual / Pengguna')
+    ], string='Sumber Jurnal', default='manual', required=True, tracking=True)
 
     rule_id = fields.Many2one(
         'consol.elimination.rule',
-        string='Elimination Rule',
-        help="Standard rule if journal was automatically generated.")
+        string='Aturan Eliminasi',
+        help="Aturan standar jika jurnal dibuat secara otomatis oleh sistem.")
 
     recurring = fields.Boolean(
-        string='Recurring (Carry-Forward)',
+        string='Berulang (Dibawa ke Periode Berikutnya)',
         default=False,
         tracking=True,
-        help="If checked, this journal will be carried forward to the next consolidation period as opening balance (e.g. E1, E5, E9).")
+        help="Jika dicentang, jurnal ini akan dibawa ke periode konsolidasi berikutnya sebagai saldo awal (misal: E1, E5, E9).")
 
     auto_reverse = fields.Boolean(
-        string='Auto-Reverse',
+        string='Pembalikan Otomatis (Auto-Reverse)',
         default=False,
         tracking=True,
-        help="If checked, this journal will be automatically reversed in the next consolidation period (e.g. E4 unrealized inventory profit).")
+        help="Jika dicentang, jurnal ini akan dibalik secara otomatis pada periode konsolidasi berikutnya (misal: E4 laba belum terealisasi persediaan).")
 
     reversed_from_id = fields.Many2one(
         'consol.journal',
-        string='Reversed From Journal',
+        string='Dibalik dari Jurnal',
         readonly=True)
 
     line_ids = fields.One2many(
         'consol.journal.line',
         'journal_id',
-        string='Elimination Journal Lines')
+        string='Baris Jurnal Eliminasi')
 
     total_debit = fields.Monetary(
         string='Total Debit',
@@ -69,17 +69,17 @@ class ConsolJournal(models.Model):
         store=True)
 
     total_credit = fields.Monetary(
-        string='Total Credit',
+        string='Total Kredit',
         currency_field='currency_id',
         compute='_compute_totals',
         store=True)
 
     state = fields.Selection([
-        ('draft', 'Draft'),
-        ('posted', 'Posted')
+        ('draft', 'Draf'),
+        ('posted', 'Terposting')
     ], string='Status', default='draft', required=True, tracking=True)
 
-    note = fields.Text(string='PSAK Basis / Supporting Notes')
+    note = fields.Text(string='Dasar PSAK / Catatan Pendukung')
 
     @api.depends('line_ids.debit', 'line_ids.credit')
     def _compute_totals(self):
@@ -92,10 +92,10 @@ class ConsolJournal(models.Model):
         for rec in self:
             if rec.state == 'posted':
                 if not rec.line_ids:
-                    raise ValidationError(_("Journal '%s' has no lines!", rec.name))
+                    raise ValidationError(_("Jurnal '%s' tidak memiliki baris rincian!", rec.name))
                 if round(rec.total_debit, 2) != round(rec.total_credit, 2):
                     raise ValidationError(_(
-                        "Elimination journal '%s' is not balanced!\nTotal Debit: %s\nTotal Credit: %s\nDifference: %s",
+                        "Jurnal eliminasi '%s' tidak seimbang (balance)!\nTotal Debit: %s\nTotal Kredit: %s\nSelisih: %s",
                         rec.name, rec.total_debit, rec.total_credit, abs(rec.total_debit - rec.total_credit)
                     ))
 
@@ -107,48 +107,48 @@ class ConsolJournal(models.Model):
     def action_reset_draft(self):
         for rec in self:
             if rec.period_id.state == 'locked':
-                raise UserError(_("Consolidation period is already locked!"))
+                raise UserError(_("Periode konsolidasi sudah dikunci! Tidak dapat mengembalikan jurnal ke draf."))
             rec.state = 'draft'
 
 
 class ConsolJournalLine(models.Model):
     _name = 'consol.journal.line'
-    _description = 'Consolidation Elimination Journal Line'
+    _description = 'Baris Jurnal Eliminasi Konsolidasi'
     _order = 'journal_id, id'
 
     journal_id = fields.Many2one(
         'consol.journal',
-        string='Elimination Journal',
+        string='Jurnal Eliminasi',
         required=True,
         ondelete='cascade')
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Period',
+        string='Periode',
         related='journal_id.period_id',
         store=True,
         index=True)
 
     currency_id = fields.Many2one(
         'res.currency',
-        string='Currency',
+        string='Mata Uang',
         related='journal_id.currency_id')
 
     consol_account_id = fields.Many2one(
         'consol.account',
-        string='Consolidation Account',
+        string='Akun Konsolidasi',
         required=True,
         index=True)
 
     entity_id = fields.Many2one(
         'consol.entity',
-        string='Working Paper Column (Related Entity)',
-        help="Leave empty if elimination applies globally to the Elimination (ELIM) column.")
+        string='Kolom Kertas Kerja (Entitas Terkait)',
+        help="Biarkan kosong jika eliminasi berlaku secara umum pada kolom Eliminasi (ELIM).")
 
     partner_entity_id = fields.Many2one(
         'consol.entity',
-        string='Counterparty Entity',
-        help="Transaction partner entity if relevant.")
+        string='Entitas Lawan Transaksi',
+        help="Entitas mitra transaksi jika relevan.")
 
     debit = fields.Monetary(
         string='Debit',
@@ -156,12 +156,12 @@ class ConsolJournalLine(models.Model):
         default=0.0)
 
     credit = fields.Monetary(
-        string='Credit',
+        string='Kredit',
         currency_field='currency_id',
         default=0.0)
 
     nci_share = fields.Float(
-        string='NCI Share (%)',
-        help="Non-controlling interest percentage affected by this line.")
+        string='Porsi NCI (%)',
+        help="Persentase kepentingan non-pengendali yang terpengaruh oleh baris ini.")
 
-    note = fields.Char(string='Line Description')
+    note = fields.Char(string='Keterangan Baris')

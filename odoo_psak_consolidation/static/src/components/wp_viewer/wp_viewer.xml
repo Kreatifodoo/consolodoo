@@ -4,23 +4,23 @@
         <div class="o_action_manager">
             <div class="o_content">
                 <div class="container-fluid py-4" style="background-color: #f8f9fa; min-height: 100vh;">
-                    <t t-if="state.data">
+                    <t t-if="this.state.data">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <button class="btn btn-secondary" t-on-click="goBack">
+                            <button class="btn btn-secondary" t-on-click="this.goBack">
                                 <i class="fa fa-arrow-left mr-2"></i> Back to Filter
                             </button>
                         </div>
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white text-center py-3">
                                 <h3 class="mb-0 text-primary font-weight-bold">WORKING PAPER SUMMARY</h3>
-                                <p class="text-muted mb-0">Period: <t t-esc="state.data.period_name"/></p>
+                                <p class="text-muted mb-0">Period: <t t-out="this.state.data.period_name"/></p>
                             </div>
                             <div class="card-body p-0" style="overflow-x: auto;">
                                 <table class="table table-hover table-bordered table-sm mb-0">
                                     <thead class="bg-light sticky-top">
                                         <tr>
                                             <th class="align-middle text-center" rowspan="2" style="min-width: 250px;">COA Consol</th>
-                                            <t t-foreach="state.data.companies" t-as="comp" t-key="comp.id">
+                                            <t t-foreach="this.state.data.companies" t-as="comp" t-key="comp.id">
                                                 <th class="text-center bg-info text-white" style="min-width: 150px;">
                                                     <t t-if="comp.type == 'parent'">Induk</t>
                                                     <t t-else="">Anak</t>
@@ -30,28 +30,28 @@
                                             <th class="align-middle text-center bg-success text-white" rowspan="2" style="min-width: 150px;">Final Consol</th>
                                         </tr>
                                         <tr>
-                                            <t t-foreach="state.data.companies" t-as="comp" t-key="'sub_'+comp.id">
-                                                <th class="text-center"><t t-esc="comp.name"/></th>
+                                            <t t-foreach="this.state.data.companies" t-as="comp" t-key="'sub_'+comp.id">
+                                                <th class="text-center"><t t-out="comp.name"/></th>
                                             </t>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <t t-foreach="state.data.rows" t-as="row" t-key="row.account_code">
+                                        <t t-foreach="this.state.data.rows" t-as="row" t-key="row.account_code">
                                             <tr>
-                                                <td class="font-weight-bold"><t t-esc="row.account_code"/> - <t t-esc="row.account_name"/></td>
+                                                <td class="font-weight-bold"><t t-out="row.account_code"/> - <t t-out="row.account_name"/></td>
                                                 
-                                                <t t-foreach="state.data.companies" t-as="comp" t-key="'val_'+row.account_code+'_'+comp.id">
+                                                <t t-foreach="this.state.data.companies" t-as="comp" t-key="'val_'+row.account_code+'_'+comp.id">
                                                     <td class="text-right">
-                                                        <t t-esc="formatCurrency(row.company_balances[comp.id])"/>
+                                                        <t t-out="this.formatCurrency(row.company_balances[comp.id])"/>
                                                     </td>
                                                 </t>
                                                 
                                                 <td class="text-right text-danger">
-                                                    <t t-esc="formatCurrency(row.elimination)"/>
+                                                    <t t-out="this.formatCurrency(row.elimination)"/>
                                                 </td>
                                                 
                                                 <td class="text-right font-weight-bold text-success">
-                                                    <t t-esc="formatCurrency(row.consolidation)"/>
+                                                    <t t-out="this.formatCurrency(row.consolidation)"/>
                                                 </td>
                                             </tr>
                                         </t>

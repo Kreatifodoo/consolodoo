@@ -4,19 +4,19 @@
         <div class="o_consolidation_report_viewer bg-view h-100 overflow-auto">
             <div class="o_report_header p-3 bg-white border-bottom d-flex justify-content-between align-items-center sticky-top">
                 <h2 class="m-0 text-primary">
-                    <t t-if="state.reportData" t-esc="state.reportData.report_name"/>
+                    <t t-if="this.state.reportData" t-out="this.state.reportData.report_name"/>
                     <t t-else="">Financial Report</t>
                 </h2>
                 <div>
-                    <button class="btn btn-primary me-2" t-on-click="downloadPdf"><i class="fa fa-file-pdf-o me-1"/> Download PDF</button>
-                    <button class="btn btn-secondary" t-on-click="downloadXls"><i class="fa fa-file-excel-o me-1"/> Download Excel</button>
+                    <button class="btn btn-primary me-2" t-on-click="this.downloadPdf"><i class="fa fa-file-pdf-o me-1"/> Download PDF</button>
+                    <button class="btn btn-secondary" t-on-click="this.downloadXls"><i class="fa fa-file-excel-o me-1"/> Download Excel</button>
                 </div>
             </div>
-            <div class="o_report_body p-4" t-if="!state.loading and state.reportData">
-                <div class="alert alert-info mb-4" t-if="state.reportData.date_from or state.reportData.date_to">
+            <div class="o_report_body p-4" t-if="!this.state.loading and this.state.reportData">
+                <div class="alert alert-info mb-4" t-if="this.state.reportData.date_from or this.state.reportData.date_to">
                     <i class="fa fa-calendar me-2"/>
                     <strong>Date Range:</strong> 
-                    <t t-esc="state.reportData.date_from || 'Start'"/> to <t t-esc="state.reportData.date_to || 'End'"/>
+                    <t t-out="this.state.reportData.date_from || 'Start'"/> to <t t-out="this.state.reportData.date_to || 'End'"/>
                 </div>
                 
                 <div class="card shadow-sm">
@@ -29,16 +29,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <t t-foreach="state.reportData.lines" t-as="line" t-key="line.id">
+                                <t t-foreach="this.state.reportData.lines" t-as="line" t-key="line.id">
                                     <tr t-att-class="line.type === 'view' ? 'table-active fw-bold' : (line.type === 'formula' ? 'fw-bold bg-light' : '')">
                                         <td class="p-2 border-end-0">
                                             <span t-attf-style="padding-left: {{ (line.sequence % 10) * 15 }}px; display: inline-block;">
-                                                <t t-esc="line.name"/>
+                                                <t t-out="line.name"/>
                                             </span>
                                         </td>
                                         <td class="p-2 text-end border-start-0">
                                             <t t-if="line.type !== 'view'">
-                                                <t t-esc="formatCurrency(line.value)"/>
+                                                <t t-out="this.formatCurrency(line.value)"/>
                                             </t>
                                         </td>
                                     </tr>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            <div t-elif="state.loading" class="p-5 text-center text-muted">
+            <div t-elif="this.state.loading" class="p-5 text-center text-muted">
                 <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw mb-3"></i>
                 <h5>Memuat data laporan...</h5>
             </div>

@@ -2,83 +2,343 @@
 <templates xml:space="preserve">
     <t t-name="odoo_psak_consolidation.ConsolReportViewer">
         <div class="o_consol_report_viewer">
-            <!-- Header Bar -->
-            <div class="o_report_header_bar">
-                <div class="o_report_title">
-                    <h3><t t-esc="state.data.report_name or 'Consolidation Report'"/></h3>
-                    <div class="o_report_subtitle">
-                        Group: <strong><t t-esc="state.data.group_name or '-'"/></strong> | 
-                        Period: <strong><t t-esc="state.data.period_name or '-'"/></strong>
+            <!-- Top Control Bar (Persis seperti Accounting Odoo Default) -->
+            <div class="o_report_control_panel">
+                <div class="o_cp_left d-flex align-items-center gap-2">
+                    <button class="btn btn-primary btn-sm o_btn_pdf" t-on-click="this.printPdf" title="Cetak Dokumen Resmi PDF">
+                        PDF
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm o_btn_xlsx" t-on-click="this.exportExcel" title="Unduh Lembar Kerja Microsoft Excel">
+                        XLSX
+                    </button>
+
+                    <!-- Judul Laporan & Switcher -->
+                    <div class="dropdown ms-2">
+                        <button class="btn btn-link text-dark p-0 d-flex align-items-center gap-1 o_report_title_btn" 
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <h4 class="m-0 fw-bold"><t t-out="this.state.data.report_name or 'Laporan Konsolidasi'"/></h4>
+                            <i class="oi text-muted small ms-1" data-icon="settings" title="Pilih Laporan Lain"/>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li class="dropdown-header">Laporan Keuangan Konsolidasi</li>
+                            <t t-foreach="this.state.availableReports or []" t-as="rep" t-key="rep.id">
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center" 
+                                       href="#" t-on-click.prevent="() => this.onReportSelect(rep.id)"
+                                       t-att-class="rep.id === this.state.report_id ? 'active fw-bold' : ''">
+                                        <t t-out="rep.name"/>
+                                        <i t-if="rep.id === this.state.report_id" class="oi text-primary ms-2" data-icon="check"/>
+                                    </a>
+                                </li>
+                            </t>
+                        </ul>
                     </div>
                 </div>
-                <div class="o_report_actions d-flex align-items-center gap-2">
-                    <select class="form-select form-select-sm" t-on-change="onReportChange" style="width: auto; font-weight: 500;">
-                        <t t-foreach="state.availableReports or []" t-as="rep" t-key="rep.id">
-                            <option t-att-value="rep.id" t-att-selected="rep.id === state.report_id ? 'selected' : undefined">
-                                <t t-esc="rep.name"/>
-                            </option>
-                        </t>
-                    </select>
-                    <select class="form-select form-select-sm" t-on-change="onPeriodChange" style="width: auto; font-weight: 500;">
-                        <t t-foreach="state.availablePeriods or []" t-as="per" t-key="per.id">
-                            <option t-att-value="per.id" t-att-selected="per.id === state.period_id ? 'selected' : undefined">
-                                <t t-esc="per.name"/>
-                            </option>
-                        </t>
-                    </select>
-                    <button class="btn btn-outline-primary btn-sm" t-on-click="refreshData">
-                        <i class="fa fa-refresh me-1"/> Refresh
+
+                <!-- Right Filters: Periode, Tanggal, Perbandingan, Opsi -->
+                <div class="o_cp_right d-flex align-items-center gap-2">
+                    <!-- 1. Filter Tanggal & Periode -->
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm border d-flex align-items-center gap-2 o_filter_btn" 
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="oi text-primary" data-icon="calendar_today"/>
+                            <span class="fw-semibold">
+                                <t t-if="this.state.filter_mode === 'all'">Periode Awal s/d Saat Ini</t>
+                                <t t-elif="this.state.filter_mode === 'custom'">
+                                    <t t-out="this.state.date_from || 'Awal'"/> s/d <t t-out="this.state.date_to || 'Saat Ini'"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-out="this.state.data.period_name or 'Pilih Periode'"/>
+                                </t>
+                            </span>
+                            <i class="oi text-muted small" data-icon="arrow_drop_down"/>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow p-3" style="min-width: 300px;">
+                            <h6 class="dropdown-header px-0 text-uppercase fw-bold text-muted small">Mode Periode Konsolidasi</h6>
+                            <button class="dropdown-item py-2 d-flex justify-content-between align-items-center rounded" 
+                                    t-on-click="() => this.onPeriodFilterSelect('all')"
+                                    t-att-class="this.state.filter_mode === 'all' ? 'active fw-bold' : ''">
+                                <span><i class="oi me-2 text-muted" data-icon="public"/>Semua Periode (Awal s/d Saat Ini)</span>
+                                <i t-if="this.state.filter_mode === 'all'" class="oi" data-icon="check"/>
+                            </button>
+
+                            <t t-if="this.state.availablePeriods.length">
+                                <div class="dropdown-divider my-2"/>
+                                <h6 class="dropdown-header px-0 text-uppercase fw-bold text-muted small">Pilih Periode Tertentu</h6>
+                                <div style="max-height: 140px; overflow-y: auto;">
+                                    <t t-foreach="this.state.availablePeriods" t-as="per" t-key="per.id">
+                                        <button class="dropdown-item py-1 text-truncate rounded" 
+                                                t-on-click="() => this.onPeriodFilterSelect('period', per.id)"
+                                                t-att-class="this.state.period_id === per.id ? 'active fw-bold' : ''">
+                                            <i class="oi me-2 text-muted" data-icon="folder"/>
+                                            <t t-out="per.name"/>
+                                            <small class="text-muted ms-1">(<t t-out="per.date_to"/>)</small>
+                                        </button>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <div class="dropdown-divider my-2"/>
+                            <h6 class="dropdown-header px-0 text-uppercase fw-bold text-muted small">Rentang Tanggal Kustom</h6>
+                            <div class="mb-2">
+                                <label class="form-label small text-muted mb-1">Dari Tanggal (Start Date):</label>
+                                <input type="date" class="form-control form-control-sm" t-att-value="this.state.date_from" t-on-input="(ev) => this.state.date_from = ev.target.value"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted mb-1">Sampai Tanggal (End Date):</label>
+                                <input type="date" class="form-control form-control-sm" t-att-value="this.state.date_to" t-on-input="(ev) => this.state.date_to = ev.target.value"/>
+                            </div>
+                            <button class="btn btn-primary btn-sm w-100" t-on-click="this.onApplyCustomDate">
+                                <i class="oi me-1" data-icon="filter_alt"/> Terapkan Rentang Tanggal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Filter Perbandingan (% Comparison) -->
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm border d-flex align-items-center gap-2 o_filter_btn" 
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="oi text-success" data-icon="calculate"/>
+                            <span>Perbandingan</span>
+                            <i class="oi text-muted small" data-icon="arrow_drop_down"/>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li class="dropdown-header">Mode Perbandingan</li>
+                            <li>
+                                <a class="dropdown-item" href="#" t-on-click.prevent="() => this.onComparisonSelect('none')"
+                                   t-att-class="this.state.comparison === 'none' ? 'active fw-bold' : ''">
+                                    Tanpa Perbandingan
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" t-on-click.prevent="() => this.onComparisonSelect('previous_period')"
+                                   t-att-class="this.state.comparison === 'previous_period' ? 'active fw-bold' : ''">
+                                    Periode Sebelumnya (MoM)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" t-on-click.prevent="() => this.onComparisonSelect('same_period_last_year')"
+                                   t-att-class="this.state.comparison === 'same_period_last_year' ? 'active fw-bold' : ''">
+                                    Tahun Lalu (YoY)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 3. Opsi Kolom (Entitas & Eliminasi) -->
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm border o_filter_btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Pengaturan Tampilan Kolom">
+                            <i class="oi text-secondary" data-icon="tune"/>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm p-3" style="min-width: 220px;">
+                            <h6 class="dropdown-header px-0 text-uppercase fw-bold text-muted small">Tampilan Kolom</h6>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="chkShowEntities" 
+                                       t-att-checked="this.state.show_entities" t-on-change="this.onToggleEntities"/>
+                                <label class="form-check-label small" for="chkShowEntities">Kolom Entitas</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="chkShowElim" 
+                                       t-att-checked="this.state.show_elimination" t-on-change="this.onToggleElimination"/>
+                                <label class="form-check-label small" for="chkShowElim">Kolom Eliminasi</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Tombol Buka / Tutup Semua (Unfold All / Fold All) -->
+                    <button class="btn btn-light btn-sm border d-flex align-items-center gap-1 o_btn_unfold_all" 
+                            t-on-click="this.toggleUnfoldAll" 
+                            t-att-title="this.state.allUnfolded ? 'Tutup Semua Rincian Data (Fold All)' : 'Buka Semua Rincian Data (Unfold All)'">
+                        <i class="oi me-1 text-primary" t-att-data-icon="this.state.allUnfolded ? 'expand_less' : 'expand_more'" t-att-class="this.state.allUnfolded ? '' : ''"/>
+                        <span class="small fw-semibold">
+                            <t t-if="this.state.allUnfolded">Tutup Semua</t>
+                            <t t-else="">Buka Semua</t>
+                        </span>
                     </button>
-                    <button class="btn btn-success btn-sm" t-on-click="exportExcel">
-                        <i class="fa fa-file-excel-o me-1"/> Export Excel
-                    </button>
-                    <button class="btn btn-secondary btn-sm" t-on-click="printPdf">
-                        <i class="fa fa-print me-1"/> Print PDF
+
+                    <!-- Badge Mata Uang -->
+                    <span class="badge bg-light text-dark border px-2 py-1 small fw-normal">
+                        Dalam <t t-out="this.state.data.currency_symbol or 'Rp'"/>
+                    </span>
+
+                    <!-- Refresh Button -->
+                    <button class="btn btn-light btn-sm border" t-on-click="this.refreshData" title="Segarkan Data Laporan">
+                        <i class="oi text-primary" data-icon="refresh"/>
                     </button>
                 </div>
             </div>
 
-            <!-- Table Matrix Container -->
-            <div class="o_report_table_container">
-                <t t-if="state.loading">
+            <!-- Sub-Banner: Informasi Entitas Terkonsolidasi (seperti di Odoo Accounting) -->
+            <div class="o_report_sub_banner">
+                <div class="d-flex align-items-center justify-content-between text-muted small">
+                    <div>
+                        <i class="oi me-1 text-primary" data-icon="business"/>
+                        <span class="fw-semibold text-dark"><t t-out="this.state.data.group_name or 'Grup Konsolidasi'"/></span>
+                        <span class="mx-2">•</span>
+                        <span>Rentang Pelaporan: <strong><t t-out="this.state.data.period_name or '-'"/></strong></span>
+                    </div>
+                    <div>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            <i class="oi me-1" data-icon="check_circle"/> PSAK 65 / IFRS 10 Terkonsolidasi
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Area Lembar Kerja Laporan Keuangan (Financial Report Sheet) -->
+            <div class="o_report_sheet_container">
+                <t t-if="this.state.loading">
                     <div class="text-center p-5">
-                        <div class="spinner-border text-primary" role="status"/>
-                        <p class="mt-2 text-muted">Loading consolidation worksheet data...</p>
+                        <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;"/>
+                        <p class="mt-3 text-muted fw-semibold">Memuat kalkulasi laporan konsolidasi...</p>
                     </div>
                 </t>
-                <t t-elif="state.data.lines">
-                    <table class="o_consol_table">
-                        <thead>
-                            <tr>
-                                <th style="width: 80px;">Notes</th>
-                                <th>Report Line Item</th>
-                                <t t-foreach="state.data.columns" t-as="col" t-key="col.id">
-                                    <th><t t-esc="col.name"/></th>
-                                </t>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="state.data.lines" t-as="line" t-key="line.id">
-                                <tr t-att-class="getLineClass(line)">
-                                    <td><t t-esc="line.note"/></td>
-                                    <td t-att-style="'padding-left: ' + (line.level * 20 + 8) + 'px;'">
-                                        <t t-esc="line.name"/>
-                                    </td>
-                                    <t t-foreach="state.data.columns" t-as="col" t-key="col.id">
-                                        <td t-att-class="line.drilldown ? 'o_drilldown_cell' : ''"
-                                            t-on-click="() => this.onCellClick(line, col)">
-                                            <t t-esc="formatValue(line.values[col.id])"/>
-                                        </td>
+                <t t-elif="this.state.data.lines and this.state.data.lines.length">
+                    <div class="o_financial_sheet shadow-sm">
+                        <!-- Header Atas Lembar Kerja (Persis Screenshot Odoo Accounting) -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="o_sheet_company_names fw-semibold text-muted">
+                                <i class="oi me-1 text-primary opacity-50" data-icon="business"/>
+                                <t t-out="this.state.data.entity_names or this.state.data.group_name or 'Entitas Konsolidasi'"/>
+                            </div>
+                            <div class="text-end text-muted small">
+                                <span class="badge bg-light text-dark border"><t t-out="this.state.data.currency_symbol or 'Rp'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Keuangan Utama -->
+                        <div class="table-responsive">
+                            <table class="table table-sm o_financial_table align-middle">
+                                <thead>
+                                    <tr class="o_table_header_row">
+                                        <th class="o_th_name" style="min-width: 340px;">Pos Akun / Uraian Laporan</th>
+                                        <th class="text-center" style="width: 70px;">CALK</th>
+                                        <t t-foreach="this.state.data.columns" t-as="col" t-key="col.id">
+                                            <th class="text-end" style="min-width: 140px;">
+                                                <div class="fw-bold"><t t-out="col.name"/></div>
+                                                <div class="text-muted fw-normal small" style="font-size: 11px;">Saldo (Balance)</div>
+                                            </th>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="this.state.data.lines" t-as="line" t-key="line.id">
+                                        <!-- Sembunyikan jika parent header sedang di-fold -->
+                                        <t t-if="!this.isLineHidden(line)">
+                                            <!-- Baris Utama Pos Laporan -->
+                                            <tr t-att-class="this.getLineClass(line)">
+                                                <!-- Uraian Baris & Indentasi Level -->
+                                                <td class="o_td_name" t-att-style="'padding-left: ' + ((line.level || 0) * 22 + 12) + 'px;'"
+                                                    t-on-click="() => this.onLineTitleClick(line)">
+                                                    <!-- 1. Header (ASET, Aset Lancar, dll.) -->
+                                                    <t t-if="line.line_type === 'header'">
+                                                        <i class="oi oi-fw me-2 o_caret_icon"
+                                                           t-att-data-icon="this.isHeaderCollapsed(line.id) ? 'arrow_right' : 'arrow_drop_down'" t-att-class="this.isHeaderCollapsed(line.id) ? 'text-muted' : 'text-dark'"
+                                                           title="Klik untuk melipat / membuka grup"/>
+                                                        <strong class="o_header_title"><t t-out="line.name"/></strong>
+                                                    </t>
+                                                    <!-- 2. Baris Akun dengan detail unfold -->
+                                                    <t t-elif="line.line_type === 'accounts'">
+                                                        <i t-if="line.can_unfold" class="oi oi-fw me-2 o_caret_icon"
+                                                           t-att-data-icon="this.isLineUnfolded(line.id) ? 'arrow_drop_down' : 'arrow_right'" t-att-class="this.isLineUnfolded(line.id) ? 'text-primary fw-bold' : 'text-muted'"
+                                                           title="Klik untuk melihat rincian akun (Unfold)"/>
+                                                        <span class="o_account_line_title"><t t-out="line.name"/></span>
+                                                    </t>
+                                                    <!-- 3. Total / Formula -->
+                                                    <t t-elif="line.line_type === 'total' or line.bold">
+                                                        <strong><t t-out="line.name"/></strong>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-out="line.name"/>
+                                                    </t>
+                                                </td>
+
+                                                <!-- Ref CALK -->
+                                                <td class="text-center text-muted small">
+                                                    <t t-out="line.note"/>
+                                                </td>
+
+                                                <!-- Nilai per Kolom Baris Utama -->
+                                                <t t-foreach="this.state.data.columns" t-as="col" t-key="col.id">
+                                                    <td class="text-end o_td_value" 
+                                                        t-att-class="line.drilldown ? 'o_drilldown_cell' : ''"
+                                                        t-on-click="() => this.onCellClick(line, col)"
+                                                        t-att-title="line.drilldown ? 'Klik untuk melihat audit neraca saldo' : undefined">
+                                                        <span class="o_value_text">
+                                                            <t t-out="this.formatValue(line.values[col.id])"/>
+                                                        </span>
+                                                        <i t-if="line.drilldown and typeof line.values[col.id] === 'number' and line.values[col.id] !== 0" 
+                                                           class="oi o_info_icon ms-1" data-icon="info"/>
+                                                    </td>
+                                                </t>
+                                            </tr>
+
+                                            <!-- RINCIAN DETAIL DATA (UNFOLDED ACCOUNT DETAILS) -->
+                                            <t t-if="line.can_unfold and this.isLineUnfolded(line.id)">
+                                                <t t-foreach="line.account_details or []" t-as="acc" t-key="acc.id">
+                                                    <tr class="o_line_sub_account">
+                                                        <!-- Uraian Sub-Akun Konsolidasi -->
+                                                        <td class="o_td_sub_name" t-att-style="'padding-left: ' + ((line.level + 1) * 22 + 18) + 'px;'"
+                                                            t-on-click="() => acc.source_details and acc.source_details.length and this.toggleSubAcc(acc.id)">
+                                                            <i t-if="acc.source_details and acc.source_details.length"
+                                                               class="oi oi-fw me-1 text-muted o_sub_caret_icon"
+                                                               t-att-data-icon="this.isSubAccUnfolded(acc.id) ? 'arrow_drop_down' : 'arrow_right'" t-att-class="this.isSubAccUnfolded(acc.id) ? 'text-primary' : ''"
+                                                               title="Klik untuk melihat rincian per entitas"/>
+                                                            <span class="badge bg-secondary-subtle text-dark border me-2 small font-monospace"><t t-out="acc.code"/></span>
+                                                            <span class="o_acc_name text-dark"><t t-out="acc.name"/></span>
+                                                        </td>
+                                                        <td class="text-center text-muted small">-</td>
+                                                        <!-- Nilai per Kolom Sub-Akun -->
+                                                        <t t-foreach="this.state.data.columns" t-as="col" t-key="col.id">
+                                                            <td class="text-end o_td_sub_value"
+                                                                t-att-class="col.type === 'consolidated' ? 'fw-semibold text-dark' : 'text-muted'">
+                                                                <t t-out="this.formatValue(acc.values[col.id])"/>
+                                                            </td>
+                                                        </t>
+                                                    </tr>
+
+                                                    <!-- RINCIAN AKUN BUKU BESAR SUMBER ENTITAS (JIKA SUB-AKUN DI-UNFOLD) -->
+                                                    <t t-if="acc.source_details and acc.source_details.length and this.isSubAccUnfolded(acc.id)">
+                                                        <t t-foreach="acc.source_details" t-as="src" t-key="src.entity_id + '_' + src.source_name">
+                                                            <tr class="o_line_source_detail">
+                                                                <td class="o_td_source_name" t-att-style="'padding-left: ' + ((line.level + 2) * 22 + 22) + 'px;'">
+                                                                    <i class="oi text-muted me-1 small" data-icon="business"/>
+                                                                    <span class="fw-semibold text-secondary"><t t-out="src.entity_name"/>: </span>
+                                                                    <span class="fst-italic text-muted"><t t-out="src.source_name"/></span>
+                                                                </td>
+                                                                <td class="text-center text-muted small">-</td>
+                                                                <!-- Kolom Nilai Sumber -->
+                                                                <t t-foreach="this.state.data.columns" t-as="col" t-key="col.id">
+                                                                    <td class="text-end o_td_source_value text-muted small">
+                                                                        <t t-if="col.type === 'entity' and col.entity_id === src.entity_id">
+                                                                            <t t-out="this.formatValue(src.balance_rc)"/>
+                                                                        </t>
+                                                                        <t t-elif="col.type === 'consolidated'">
+                                                                            <t t-out="this.formatValue(src.balance_rc)"/>
+                                                                        </t>
+                                                                        <t t-else="">-</t>
+                                                                    </td>
+                                                                </t>
+                                                            </tr>
+                                                        </t>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                        </t>
                                     </t>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </t>
                 <t t-else="">
-                    <div class="text-center p-5 text-muted">
-                        <i class="fa fa-info-circle fa-2x mb-2"/>
-                        <p>No report data found for this period.</p>
+                    <div class="text-center p-5 text-muted bg-white rounded shadow-sm">
+                        <i class="oi oi-3x text-muted mb-3" data-icon="description"/>
+                        <h5>Tidak ada data transaksi konsolidasi</h5>
+                        <p class="small text-muted mb-3">Tidak ditemukan saldo buku besar atau neraca saldo pada periode/rentang tanggal yang dipilih.</p>
+                        <button class="btn btn-outline-primary btn-sm" t-on-click="this.refreshData">
+                            <i class="oi me-1" data-icon="refresh"/> Tampilkan Semua Periode
+                        </button>
                     </div>
                 </t>
             </div>

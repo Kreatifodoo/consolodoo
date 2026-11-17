@@ -7,33 +7,36 @@ from odoo.exceptions import UserError
 
 class ConsolImportTbWizard(models.TransientModel):
     _name = 'consol.import.tb.wizard'
-    _description = 'External Trial Balance Import Wizard (CSV/XLSX)'
+    _description = 'Wisard Impor Neraca Saldo Eksternal (CSV/Excel)'
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
-        required=True)
+        string='Periode Konsolidasi',
+        required=True,
+        help="Pilih periode konsolidasi tujuan pengimporan neraca saldo.")
 
     entity_id = fields.Many2one(
         'consol.entity',
-        string='Target Entity (External)',
+        string='Entitas Tujuan (Eksternal)',
         required=True,
-        domain="[('source_type', '=', 'import')]")
+        domain="[('source_type', '=', 'import')]",
+        help="Entitas eksternal yang data neraca saldonya bersumber dari impor CSV/Excel.")
 
-    file_data = fields.Binary(string='Trial Balance File (CSV)', required=True)
-    filename = fields.Char(string='File Name')
+    file_data = fields.Binary(string='Berkas Neraca Saldo (CSV)', required=True,
+                              help="Unggah berkas CSV neraca saldo dengan format kolom: Kode Akun, Nama Akun, Saldo.")
+    filename = fields.Char(string='Nama Berkas')
 
     def action_import_file(self):
         self.ensure_one()
         if not self.file_data:
-            raise UserError(_("Please select a CSV file to import!"))
+            raise UserError(_("Silakan pilih berkas CSV yang ingin diimpor!"))
 
         decoded_data = base64.b64decode(self.file_data).decode('utf-8-sig', errors='ignore')
         reader = csv.reader(io.StringIO(decoded_data), delimiter=',')
 
         header = next(reader, None)
         if not header:
-            raise UserError(_("CSV file is empty!"))
+            raise UserError(_("Berkas CSV kosong!"))
 
         tb = self.env['consol.trial.balance'].search([
             ('period_id', '=', self.period_id.id),
@@ -78,7 +81,7 @@ class ConsolImportTbWizard(models.TransientModel):
                     mapping_by_code[code] = consol_acc
 
             if not consol_acc:
-                raise UserError(_("External account code '%s' (%s) is not mapped to Consolidation Account!", code, name))
+                raise UserError(_("Kode akun eksternal '%s' (%s) belum dipetakan ke Akun Konsolidasi!", code, name))
 
             rate_used = a_rate if consol_acc.statement in ['pl', 'oci'] else c_rate
             bal_rc = bal_fc * rate_used
@@ -101,8 +104,8 @@ class ConsolImportTbWizard(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Import Succeeded'),
-                'message': _('Successfully imported %s trial balance lines for %s.', len(lines_to_create), self.entity_id.name),
+                'title': _('Impor Berhasil'),
+                'message': _('Berhasil mengimpor %s baris neraca saldo untuk %s.', len(lines_to_create), self.entity_id.name),
                 'sticky': False,
                 'next': {'type': 'ir.actions.act_window_close'},
             }

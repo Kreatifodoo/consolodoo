@@ -11,28 +11,31 @@ except ImportError:
 
 class ConsolReportExportWizard(models.TransientModel):
     _name = 'consol.report.export.wizard'
-    _description = 'Consolidated Financial Report Export & Print Wizard'
+    _description = 'Wisard Ekspor & Cetak Laporan Keuangan Konsolidasian'
 
     period_id = fields.Many2one(
         'consol.period',
-        string='Consolidation Period',
+        string='Periode Konsolidasi',
         required=True,
-        default=lambda self: self.env['consol.period'].search([], order='date_to desc, id desc', limit=1))
+        default=lambda self: self.env['consol.period'].search([], order='date_to desc, id desc', limit=1),
+        help="Pilih periode konsolidasi yang ingin dicetak atau diekspor laporannya.")
 
     report_id = fields.Many2one(
         'consol.report',
-        string='Report Template',
+        string='Template Laporan Keuangan',
         required=True,
-        default=lambda self: self.env['consol.report'].search([('report_type', '=', 'balance_sheet')], limit=1))
+        default=lambda self: self.env['consol.report'].search([('report_type', '=', 'balance_sheet')], limit=1),
+        help="Pilih template laporan keuangan (misal: Neraca, Laba Rugi, Perubahan Ekuitas, Arus Kas).")
 
     export_format = fields.Selection([
-        ('interactive', 'Interactive Web View (OWL)'),
+        ('interactive', 'Tampilan Web Interaktif (OWL)'),
         ('xlsx', 'Microsoft Excel (.xlsx)'),
-        ('pdf', 'Official PDF Printout')
-    ], string='Output Format', default='interactive', required=True)
+        ('pdf', 'Cetak Dokumen Resmi PDF')
+    ], string='Format Keluaran', default='interactive', required=True,
+       help="Pilih format media keluaran untuk melihat atau mengunduh laporan keuangan konsolidasian.")
 
-    file_data = fields.Binary(string='Output File', readonly=True)
-    filename = fields.Char(string='File Name', readonly=True)
+    file_data = fields.Binary(string='Berkas Keluaran', readonly=True)
+    filename = fields.Char(string='Nama Berkas', readonly=True)
 
     def action_generate_export(self):
         self.ensure_one()
@@ -40,7 +43,7 @@ class ConsolReportExportWizard(models.TransientModel):
             return {
                 'type': 'ir.actions.client',
                 'tag': 'consol_report_viewer_action',
-                'name': self.report_id.name or _('Consolidation Report'),
+                'name': self.report_id.name or _('Laporan Konsolidasi'),
                 'params': {
                     'period_id': self.period_id.id,
                     'report_id': self.report_id.id,
@@ -60,13 +63,13 @@ class ConsolReportExportWizard(models.TransientModel):
 
         elif self.export_format == 'xlsx':
             if not xlsxwriter:
-                raise UserError(_("Python module 'xlsxwriter' is not installed!"))
+                raise UserError(_("Modul Python 'xlsxwriter' belum terpasang!"))
 
             output = io.BytesIO()
             workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-            sheet = workbook.add_worksheet('Consolidation Report')
+            sheet = workbook.add_worksheet('Laporan Konsolidasi')
 
-            # Cell styles
+            # Gaya sel
             title_format = workbook.add_format({'bold': True, 'font_size': 14, 'align': 'center'})
             header_format = workbook.add_format({'bold': True, 'bg_color': '#1f4e79', 'font_color': '#ffffff', 'align': 'center', 'border': 1})
             bold_row_format = workbook.add_format({'bold': True, 'num_format': '#,##0.00'})
@@ -78,13 +81,13 @@ class ConsolReportExportWizard(models.TransientModel):
             columns = matrix['columns']
             lines = matrix['lines']
 
-            # Report title
+            # Judul laporan
             sheet.merge_range(0, 0, 0, len(columns) + 1, matrix['report_name'].upper(), title_format)
-            sheet.merge_range(1, 0, 1, len(columns) + 1, f"Group: {matrix['group_name']} | Period: {matrix['period_name']}", text_format)
+            sheet.merge_range(1, 0, 1, len(columns) + 1, f"Grup: {matrix['group_name']} | Periode: {matrix['period_name']}", text_format)
 
-            # Column headers
-            sheet.write(3, 0, 'Notes Ref', header_format)
-            sheet.write(3, 1, 'Report Line Item', header_format)
+            # Judul kolom
+            sheet.write(3, 0, 'Ref Catatan', header_format)
+            sheet.write(3, 1, 'Pos Laporan Keuangan', header_format)
             sheet.set_column(0, 0, 12)
             sheet.set_column(1, 1, 45)
 

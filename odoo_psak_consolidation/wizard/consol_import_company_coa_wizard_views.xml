@@ -4,11 +4,11 @@
         <field name="name">consol.import.company.coa.wizard.form</field>
         <field name="model">consol.import.company.coa.wizard</field>
         <field name="arch" type="xml">
-            <form string="Import Master CoA from Company">
+            <form string="Salin Master Akun dari Perusahaan">
                 <sheet>
                     <p class="text-muted">
-                        This wizard will import the entire Chart of Accounts from the selected Odoo company into the 
-                        <strong>Consolidation Chart of Accounts</strong> and automatically map accounts across all entities.
+                        Panduan ini akan menyalin seluruh Bagan Akun dari perusahaan Odoo yang dipilih ke dalam 
+                        <strong>Bagan Akun Konsolidasi</strong> serta secara otomatis memetakan akun pada seluruh entitas yang ada.
                     </p>
                     <group>
                         <field name="company_id" options="{'no_create': True}"/>
@@ -17,18 +17,18 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Import &amp; Auto-Map"
+                    <button string="Salin &amp; Petakan Otomatis"
                             name="action_import_and_map"
                             type="object"
                             class="btn-primary"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_consol_import_company_coa_wizard" model="ir.actions.act_window">
-        <field name="name">Import Master CoA from Company</field>
+        <field name="name">Salin Master Akun dari Perusahaan</field>
         <field name="res_model">consol.import.company.coa.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
